@@ -9,6 +9,7 @@ def get_similarity_scores(test_file, tokenizer, maxlen, model_path):
     processed_text = []
     pair_ids = []
     with open(test_file, 'r') as tst:
+        i = 0
         fl = True
         for l in tst:
             if fl:
@@ -21,13 +22,20 @@ def get_similarity_scores(test_file, tokenizer, maxlen, model_path):
             pair_ids.append(id1 + '_' + id2)
             processed_text.append(tokenizer.encode_plus(text1, text2, add_special_tokens=True, max_length=maxlen,
                                                         pad_to_max_length=True))
+            i += 1
+            if i % 100 == 0:
+                print(str(i)+" lines processed")
+
+    print("Text processing done")
     tokens_tensor = torch.tensor([t['input_ids'] for t in processed_text])
     type_tensor = torch.tensor([t['token_type_ids'] for t in processed_text])
     attn_tensor = torch.tensor([t['attention_mask'] for t in processed_text])
+    print("Tensors formed")
     model = BertForSequenceClassification.from_pretrained(model_path)
     model.eval()
     with torch.no_grad():
         outputs = model(tokens_tensor, attention_mask=attn_tensor, token_type_ids=type_tensor)
+    print("Predictions received")
     sm = torch.nn.Softmax(dim=1)
 
     # sm(outputs) is an array of 2 valued array [-ve, +ve] in tensor form
@@ -52,6 +60,7 @@ def main():
     outfile = args['outfile']
     tokenizer = BertTokenizer.from_pretrained(model_path)
     pred_dict = get_similarity_scores(test_file, tokenizer, maxlen, model_path)
+    print("Writing parapair score file")
     with open(outfile, 'w') as out:
         json.dump(pred_dict, out)
 
