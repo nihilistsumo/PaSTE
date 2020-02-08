@@ -5,7 +5,7 @@ import json
 import torch
 import argparse
 
-def get_similarity_scores(test_file, tokenizer, maxlen, model_path):
+def get_similarity_scores(test_file, tokenizer, maxlen, model_path, batch_size=100):
     processed_text = []
     pair_ids = []
     with open(test_file, 'r') as tst:
@@ -27,21 +27,48 @@ def get_similarity_scores(test_file, tokenizer, maxlen, model_path):
                 print(str(i)+" lines processed")
 
     print("Text processing done")
-    tokens_tensor = torch.tensor([t['input_ids'] for t in processed_text])
-    type_tensor = torch.tensor([t['token_type_ids'] for t in processed_text])
-    attn_tensor = torch.tensor([t['attention_mask'] for t in processed_text])
-    print("Tensors formed")
     model = BertForSequenceClassification.from_pretrained(model_path)
     model.eval()
+    print("Going to calculate predictions with batch size: " + str(batch_size))
+    cuda_avail = False
+    if torch.cuda.device_count() > 0:
+        cuda_avail = True
+        print("Cuda enabled GPU available, using " + torch.cuda.get_device_name(0))
+        model.to('cuda')
+    sm = torch.nn.Softmax(dim=1)
+    predictions = []
+    for b in range(len(processed_text)//batch_size):
+        batch_text = processed_text[b*batch_size:(b+1)*batch_size]
+        tokens_tensor = torch.tensor([t['input_ids'] for t in batch_text])
+        type_tensor = torch.tensor([t['token_type_ids'] for t in batch_text])
+        attn_tensor = torch.tensor([t['attention_mask'] for t in batch_text])
+        if cuda_avail:
+            tokens_tensor.to('cuda')
+            type_tensor.to('cuda')
+            attn_tensor.to('cuda')
+        print("Batch " + str(b+1) + "Tensors formed")
+        with torch.no_grad():
+            outputs = model(tokens_tensor, attention_mask=attn_tensor, token_type_ids=type_tensor)
+        print("Predictions received")
+
+        # sm(outputs) is an array of 2 valued array [-ve, +ve] in tensor form
+        # we save only the second element which is the chance prediciton of the instance to have a positive label
+
+        predictions += [p[1].item() for p in sm(outputs[0])]
+    batch_text = processed_text[(len(processed_text)//batch_size) * batch_size:]
+    tokens_tensor = torch.tensor([t['input_ids'] for t in batch_text])
+    type_tensor = torch.tensor([t['token_type_ids'] for t in batch_text])
+    attn_tensor = torch.tensor([t['attention_mask'] for t in batch_text])
+    if cuda_avail:
+        tokens_tensor.to('cuda')
+        type_tensor.to('cuda')
+        attn_tensor.to('cuda')
+    print("Last batch Tensors formed")
     with torch.no_grad():
         outputs = model(tokens_tensor, attention_mask=attn_tensor, token_type_ids=type_tensor)
     print("Predictions received")
-    sm = torch.nn.Softmax(dim=1)
-
-    # sm(outputs) is an array of 2 valued array [-ve, +ve] in tensor form
-    # we save only the second element which is the chance prediciton of the instance to have a positive label
-
-    predictions = [p[1].item() for p in sm(outputs[0])]
+    predictions += [p[1].item() for p in sm(outputs[0])]
+    assert len(predictions) == len(pair_ids)
     pred_dict = dict()
     for i in range(len(pair_ids)):
         pred_dict[pair_ids[i]] = predictions[i]
