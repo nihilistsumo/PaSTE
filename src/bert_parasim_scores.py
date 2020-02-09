@@ -43,9 +43,9 @@ def get_similarity_scores(test_file, tokenizer, maxlen, model_path, batch_size=1
         type_tensor = torch.tensor([t['token_type_ids'] for t in batch_text])
         attn_tensor = torch.tensor([t['attention_mask'] for t in batch_text])
         if cuda_avail:
-            tokens_tensor.to('cuda')
-            type_tensor.to('cuda')
-            attn_tensor.to('cuda')
+            tokens_tensor = tokens_tensor.to('cuda')
+            type_tensor = type_tensor.to('cuda')
+            attn_tensor = attn_tensor.to('cuda')
         print("Batch " + str(b+1) + "Tensors formed")
         with torch.no_grad():
             outputs = model(tokens_tensor, attention_mask=attn_tensor, token_type_ids=type_tensor)
@@ -60,9 +60,9 @@ def get_similarity_scores(test_file, tokenizer, maxlen, model_path, batch_size=1
     type_tensor = torch.tensor([t['token_type_ids'] for t in batch_text])
     attn_tensor = torch.tensor([t['attention_mask'] for t in batch_text])
     if cuda_avail:
-        tokens_tensor.to('cuda')
-        type_tensor.to('cuda')
-        attn_tensor.to('cuda')
+        tokens_tensor = tokens_tensor.to('cuda')
+        type_tensor = type_tensor.to('cuda')
+        attn_tensor = attn_tensor.to('cuda')
     print("Last batch Tensors formed")
     with torch.no_grad():
         outputs = model(tokens_tensor, attention_mask=attn_tensor, token_type_ids=type_tensor)
