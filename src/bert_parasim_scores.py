@@ -1,32 +1,11 @@
 import transformers
-from transformers import BertTokenizer, BertModel, BertForSequenceClassification
+from transformers import BertTokenizer, BertForSequenceClassification
 import numpy as np
 import json
 import torch
 import argparse
 
-def get_similarity_scores(test_file, tokenizer, maxlen, model_path, batch_size=100):
-    processed_text = []
-    pair_ids = []
-    with open(test_file, 'r') as tst:
-        i = 0
-        fl = True
-        for l in tst:
-            if fl:
-                fl = False
-                continue
-            id1 = l.split('\t')[1]
-            id2 = l.split('\t')[2]
-            text1 = l.split('\t')[3]
-            text2 = l.split('\t')[4]
-            pair_ids.append(id1 + '_' + id2)
-            processed_text.append(tokenizer.encode_plus(text1, text2, add_special_tokens=True, max_length=maxlen,
-                                                        pad_to_max_length=True))
-            i += 1
-            if i % 100 == 0:
-                print(str(i)+" lines processed")
-
-    print("Text processing done")
+def get_similarity_scores(tokenized_pairs, pair_ids, model_path, batch_size=100):
     model = BertForSequenceClassification.from_pretrained(model_path)
     model.eval()
     print("Going to calculate predictions with batch size: " + str(batch_size))
@@ -37,11 +16,12 @@ def get_similarity_scores(test_file, tokenizer, maxlen, model_path, batch_size=1
         model.to('cuda')
     sm = torch.nn.Softmax(dim=1)
     predictions = []
-    for b in range(len(processed_text)//batch_size):
-        batch_text = processed_text[b*batch_size:(b+1)*batch_size]
-        tokens_tensor = torch.tensor([t['input_ids'] for t in batch_text])
-        type_tensor = torch.tensor([t['token_type_ids'] for t in batch_text])
-        attn_tensor = torch.tensor([t['attention_mask'] for t in batch_text])
+    batch_count = len(tokenized_pairs['input_ids']) // batch_size
+    for b in range(batch_count):
+        #batch_text = processed_text[b*batch_size:(b+1)*batch_size]
+        tokens_tensor = torch.tensor(tokenized_pairs['input_ids'][b*batch_size : (b+1)*batch_size])
+        type_tensor = torch.tensor(tokenized_pairs['token_type_ids'][b*batch_size : (b+1)*batch_size])
+        attn_tensor = torch.tensor(tokenized_pairs['attention_mask'][b*batch_size : (b+1)*batch_size])
         if cuda_avail:
             tokens_tensor = tokens_tensor.to('cuda')
             type_tensor = type_tensor.to('cuda')
@@ -55,18 +35,18 @@ def get_similarity_scores(test_file, tokenizer, maxlen, model_path, batch_size=1
         # we save only the second element which is the chance prediciton of the instance to have a positive label
 
         predictions += [p[1].item() for p in sm(outputs[0])]
-    batch_text = processed_text[(len(processed_text)//batch_size) * batch_size:]
-    tokens_tensor = torch.tensor([t['input_ids'] for t in batch_text])
-    type_tensor = torch.tensor([t['token_type_ids'] for t in batch_text])
-    attn_tensor = torch.tensor([t['attention_mask'] for t in batch_text])
+    #batch_text = processed_text[(len(processed_text)//batch_size) * batch_size:]
+    tokens_tensor = torch.tensor(tokenized_pairs['input_ids'][b * batch_size: (b + 1) * batch_size])
+    type_tensor = torch.tensor(tokenized_pairs['token_type_ids'][b * batch_size: (b + 1) * batch_size])
+    attn_tensor = torch.tensor(tokenized_pairs['attention_mask'][b * batch_size: (b + 1) * batch_size])
     if cuda_avail:
         tokens_tensor = tokens_tensor.to('cuda')
         type_tensor = type_tensor.to('cuda')
         attn_tensor = attn_tensor.to('cuda')
-    print("Last batch Tensors formed")
+    print("Last batch Tensors formed", end='')
     with torch.no_grad():
         outputs = model(tokens_tensor, attention_mask=attn_tensor, token_type_ids=type_tensor)
-    print("Predictions received")
+    print(" ..Predictions received")
     predictions += [p[1].item() for p in sm(outputs[0])]
     assert len(predictions) == len(pair_ids)
     pred_dict = dict()
@@ -76,17 +56,18 @@ def get_similarity_scores(test_file, tokenizer, maxlen, model_path, batch_size=1
 
 def main():
     parser = argparse.ArgumentParser(description='Use pre-trained models to predict on para similarity data')
-    parser.add_argument('-t', '--test_filepath', help='Path to parapair file in BERT seq pair format')
+    parser.add_argument('-t', '--tokenized_dirpath', help='Path to tokenized pairtext dir')
     parser.add_argument('-m', '--model_path', nargs='+', help='Path to pre-trained/fine tuned model')
-    parser.add_argument('-l', '--seq_maxlen', help='Maximum seq length, same as the model used')
     parser.add_argument('-o', '--outdir', help='Path to parapair score output directory')
     args = vars(parser.parse_args())
-    test_file = args['test_filepath']
+    tok_dir = args['tokenized_dirpath']
     model_path = args['model_path']
-    maxlen = int(args['seq_maxlen'])
     outdir = args['outdir']
-    tokenizer = BertTokenizer.from_pretrained(model_path)
-    pred_dict = get_similarity_scores(test_file, tokenizer, maxlen, model_path)
+    with open(tok_dir+'/paraid.json', 'w') as idin:
+        with open(tok_dir+'/processed_text.json', 'w') as textin:
+            paraids = json.load(idin)
+            tokenized = json.load(textin)
+    pred_dict = get_similarity_scores(tokenized, paraids, model_path)
     print("Writing parapair score file")
     with open(outdir, 'w') as out:
         json.dump(pred_dict, out)
