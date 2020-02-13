@@ -91,17 +91,19 @@ def main():
     parser.add_argument('-t', '--processed_textfile', help='Path to processed pairtext file')
     parser.add_argument('-n', '--model_type', help='Type of model (bert/roberta/albert/xlnet/xlmroberta/flaubert)')
     parser.add_argument('-m', '--model_path', help='Path to pre-trained/fine tuned model')
+    parser.add_argument('-b', '--batch_size', help='Batch size of the tensors submitted to GPU')
     parser.add_argument('-o', '--outdir', help='Path to parapair score output directory')
     args = vars(parser.parse_args())
     pp_file = args['parapair_file']
     proc_text = args['processed_textfile']
     model_type = args['model_type']
     model_path = args['model_path']
+    batch = int(args['batch_size'])
     outdir = args['outdir']
     paraids = get_pair_ids(pp_file)
     with open(proc_text, 'r') as proc:
         tokenized = json.load(proc)
-    pred_dict = get_similarity_scores(tokenized, paraids, model_type, model_path)
+    pred_dict = get_similarity_scores(tokenized, paraids, model_type, model_path, batch)
     model_name = model_path.split('/')[len(model_path.split('/')) - 1]
     print("Writing parapair score file")
     with open(outdir + '/' + model_name + '.json', 'w') as out:
