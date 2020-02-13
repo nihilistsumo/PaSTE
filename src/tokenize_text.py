@@ -33,7 +33,7 @@ def main():
     parser.add_argument('-t', '--test_filepath', help='Path to parapair file in BERT seq pair format')
     parser.add_argument('-m', '--model_path', help='Path to pre-trained/fine tuned model')
     parser.add_argument('-l', '--seq_maxlen', help='Maximum seq length, same as the model used')
-    parser.add_argument('-o', '--outfile', help='Path to output dir to save pair ids and tokenized text')
+    parser.add_argument('-o', '--outfile', help='Path to output file to save tokenized text')
     args = vars(parser.parse_args())
     test_file = args['test_filepath']
     model_path = args['model_path']
