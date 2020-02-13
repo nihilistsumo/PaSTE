@@ -63,8 +63,8 @@ def main():
     tok_dir = args['tokenized_dirpath']
     model_path = args['model_path']
     outdir = args['outdir']
-    with open(tok_dir+'/paraid.json', 'w') as idin:
-        with open(tok_dir+'/processed_text.json', 'w') as textin:
+    with open(tok_dir+'/paraid.json', 'r') as idin:
+        with open(tok_dir+'/processed_text.json', 'r') as textin:
             paraids = json.load(idin)
             tokenized = json.load(textin)
     pred_dict = get_similarity_scores(tokenized, paraids, model_path)
