@@ -46,10 +46,10 @@ def get_similarity_scores(test_file, tokenizer, maxlen, model_path, batch_size=1
             tokens_tensor = tokens_tensor.to('cuda')
             type_tensor = type_tensor.to('cuda')
             attn_tensor = attn_tensor.to('cuda')
-        print("Batch " + str(b+1) + "Tensors formed")
+        print("Batch " + str(b+1) + " Tensors formed", end='')
         with torch.no_grad():
             outputs = model(tokens_tensor, attention_mask=attn_tensor, token_type_ids=type_tensor)
-        print("Predictions received")
+        print(" ..Predictions received")
 
         # sm(outputs) is an array of 2 valued array [-ve, +ve] in tensor form
         # we save only the second element which is the chance prediciton of the instance to have a positive label
@@ -77,18 +77,18 @@ def get_similarity_scores(test_file, tokenizer, maxlen, model_path, batch_size=1
 def main():
     parser = argparse.ArgumentParser(description='Use pre-trained models to predict on para similarity data')
     parser.add_argument('-t', '--test_filepath', help='Path to parapair file in BERT seq pair format')
-    parser.add_argument('-m', '--model_path', help='Path to pre-trained/fine tuned model')
+    parser.add_argument('-m', '--model_path', nargs='+', help='Path to pre-trained/fine tuned model')
     parser.add_argument('-l', '--seq_maxlen', help='Maximum seq length, same as the model used')
-    parser.add_argument('-o', '--outfile', help='Path to parapair score output file')
+    parser.add_argument('-o', '--outdir', help='Path to parapair score output directory')
     args = vars(parser.parse_args())
     test_file = args['test_filepath']
     model_path = args['model_path']
     maxlen = int(args['seq_maxlen'])
-    outfile = args['outfile']
+    outdir = args['outdir']
     tokenizer = BertTokenizer.from_pretrained(model_path)
     pred_dict = get_similarity_scores(test_file, tokenizer, maxlen, model_path)
     print("Writing parapair score file")
-    with open(outfile, 'w') as out:
+    with open(outdir, 'w') as out:
         json.dump(pred_dict, out)
 
 if __name__ == '__main__':
