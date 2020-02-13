@@ -57,7 +57,7 @@ def get_similarity_scores(tokenized_pairs, pair_ids, model_path, batch_size=100)
 def main():
     parser = argparse.ArgumentParser(description='Use pre-trained models to predict on para similarity data')
     parser.add_argument('-t', '--tokenized_dirpath', help='Path to tokenized pairtext dir')
-    parser.add_argument('-m', '--model_path', nargs='+', help='Path to pre-trained/fine tuned model')
+    parser.add_argument('-m', '--model_path', help='Path to pre-trained/fine tuned model')
     parser.add_argument('-o', '--outdir', help='Path to parapair score output directory')
     args = vars(parser.parse_args())
     tok_dir = args['tokenized_dirpath']
@@ -68,8 +68,9 @@ def main():
             paraids = json.load(idin)
             tokenized = json.load(textin)
     pred_dict = get_similarity_scores(tokenized, paraids, model_path)
+    model_name = model_path.split('/')[len(model_path.split('/')) - 1]
     print("Writing parapair score file")
-    with open(outdir, 'w') as out:
+    with open(outdir + '/' + model_name, 'w') as out:
         json.dump(pred_dict, out)
 
 if __name__ == '__main__':
