@@ -4,7 +4,7 @@ import argparse
 
 def tokenize_text(test_file, model_file, out_dir):
     tokenizer = AutoTokenizer.from_pretrained(model_file)
-    processed_text = []
+    unprocessed_pairs = []
     pair_ids = []
     with open(test_file, 'r') as tst:
         i = 0
@@ -18,17 +18,18 @@ def tokenize_text(test_file, model_file, out_dir):
             text1 = l.split('\t')[3]
             text2 = l.split('\t')[4]
             pair_ids.append(id1 + '_' + id2)
-            processed_text.append(tokenizer.encode_plus(text1, text2, add_special_tokens=True, max_length=maxlen,
-                                                        pad_to_max_length=True))
+            unprocessed_pairs.append((text1, text2))
             i += 1
             if i % 1000 == 0:
-                print(str(i) + " lines processed")
+                print(str(i) + " unprocessed pairs added")
+    print("Going to batch-encode the text pairs")
+    processed_pairs = tokenizer.batch_encode_plus(unprocessed_pairs, add_special_tokens=True)
     print("Text processing done")
     print("Saving at " + out_dir)
     with open(out_dir+'/paraid.json', 'w') as outid:
         with open(out_dir+'/processed_text.json', 'w') as outtext:
             json.dump(pair_ids, outid)
-            json.dump(processed_text, outtext)
+            json.dump(processed_pairs, outtext)
 
 def main():
     parser = argparse.ArgumentParser(description='Tokenize paratext')
