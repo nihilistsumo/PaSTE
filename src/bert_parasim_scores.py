@@ -70,7 +70,7 @@ def main():
     pred_dict = get_similarity_scores(tokenized, paraids, model_path)
     model_name = model_path.split('/')[len(model_path.split('/')) - 1]
     print("Writing parapair score file")
-    with open(outdir + '/' + model_name, 'w') as out:
+    with open(outdir + '/' + model_name + '.json', 'w') as out:
         json.dump(pred_dict, out)
 
 if __name__ == '__main__':
