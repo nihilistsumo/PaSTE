@@ -1,6 +1,7 @@
 import transformers
 from transformers import BertForSequenceClassification, XLNetForSequenceClassification, RobertaForSequenceClassification
 from transformers import AlbertForSequenceClassification, XLMRobertaForSequenceClassification, FlaubertForSequenceClassification
+from transformers import XLMForSequenceClassification
 
 import numpy as np
 import json
@@ -34,6 +35,8 @@ def get_similarity_scores(processed_text, pair_ids, model_type, model_path, batc
         model = XLMRobertaForSequenceClassification.from_pretrained(model_path)
     elif model_type == 'flaubert':
         model = FlaubertForSequenceClassification.from_pretrained(model_path)
+    elif model_type == 'xlm':
+        model = XLMForSequenceClassification.from_pretrained(model_path)
     else:
         print("Fine tuned model in model path and model type does not match")
         exit(0)
