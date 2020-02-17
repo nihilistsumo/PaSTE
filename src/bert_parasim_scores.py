@@ -93,7 +93,7 @@ def get_para_embed_vec(pid, paraids, embed_dir, embed_file_prefix, batch_size):
     pindex = paraids.index(pid)
     part = pindex // batch_size + 1
     part_offset = pindex % batch_size
-    embed_arr = np.load(embed_dir + '/' + embed_file_prefix + '-part' + part)
+    embed_arr = np.load(embed_dir + '/' + embed_file_prefix + '-part' + str(part))
     emb_vec = embed_arr[part_offset]
     return emb_vec
 
