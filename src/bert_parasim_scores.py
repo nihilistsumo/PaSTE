@@ -7,6 +7,7 @@ import numpy as np
 import json
 import torch
 import argparse
+from scipy.spatial import distance
 
 def get_pair_ids(pairtext_file):
     pair_ids = []
@@ -88,13 +89,37 @@ def get_similarity_scores(processed_text, pair_ids, model_type, model_path, batc
         pred_dict[pair_ids[i]] = predictions[i]
     return pred_dict
 
+def get_para_embed_vec(pid, paraids, embed_dir, embed_file_prefix, batch_size):
+    pindex = paraids.index(pid)
+    part = pindex // batch_size + 1
+    part_offset = pindex % batch_size
+    embed_arr = np.load(embed_dir + '/' + embed_file_prefix + '-part' + part)
+    emb_vec = embed_arr[part_offset]
+    return emb_vec
+
+def get_embed_similarity_scores(pair_ids, paraids, embed_dir, embed_file_prefix, batch_size):
+    pred_dict = dict()
+    for i in range(len(pair_ids)):
+        p1 = pair_ids[i].split('_')[0]
+        p2 = pair_ids[i].split('_')[1]
+        p1vec = get_para_embed_vec(p1, paraids, embed_dir, embed_file_prefix, batch_size)
+        p2vec = get_para_embed_vec(p2, paraids, embed_dir, embed_file_prefix, batch_size)
+        pred_dict[pair_ids[i]] = 1 - distance.cosine(p1vec, p2vec)
+        if i % batch_size == 0:
+            print(str(i) + ' predictions received')
+    return pred_dict
+
 def main():
     parser = argparse.ArgumentParser(description='Use pre-trained models to predict on para similarity data')
     parser.add_argument('-p', '--parapair_file', help='Path to parapair file in BERT seq pair format')
     parser.add_argument('-t', '--processed_textfile', help='Path to processed pairtext file')
-    parser.add_argument('-n', '--model_type', help='Type of model (bert/roberta/albert/xlnet/xlmroberta/flaubert)')
-    parser.add_argument('-m', '--model_path', help='Path to pre-trained/fine tuned model')
-    parser.add_argument('-b', '--batch_size', help='Batch size of the tensors submitted to GPU')
+    parser.add_argument('-n', '--model_type', default='', help='Type of model (bert/roberta/albert/xlnet/xlmroberta/flaubert)')
+    parser.add_argument('-m', '--model_path', default='', help='Path to pre-trained/fine tuned model')
+    parser.add_argument('-b', '--batch_size', help='In case of transformer models: Batch size of the tensors submitted to GPU\n'
+                                                   'In case of embedding models: Size of each para embedding shards')
+    parser.add_argument('-i', '--paraids_emb', help='Path to paraids file corresponding to the para embeddings')
+    parser.add_argument('-e', '--emb_dir', help='Path to the para embedding dir')
+    parser.add_argument('-x', '--emb_file_prefix', help='Common part of the file name of each embedding shards')
     parser.add_argument('-o', '--outdir', help='Path to parapair score output directory')
     args = vars(parser.parse_args())
     pp_file = args['parapair_file']
@@ -102,15 +127,25 @@ def main():
     model_type = args['model_type']
     model_path = args['model_path']
     batch = int(args['batch_size'])
+    paraids_file = args['paraids_emb']
+    emb_dir = args['emb_dir']
+    emb_prefix = args['emb_file_prefix']
     outdir = args['outdir']
-    paraids = get_pair_ids(pp_file)
-    with open(proc_text, 'r') as proc:
-        tokenized = json.load(proc)
-    pred_dict = get_similarity_scores(tokenized, paraids, model_type, model_path, batch)
-    model_name = model_path.split('/')[len(model_path.split('/')) - 1]
-    print("Writing parapair score file")
-    with open(outdir + '/' + model_name + '.json', 'w') as out:
-        json.dump(pred_dict, out)
+    parapairids = get_pair_ids(pp_file)
+    if model_path == '' and model_type == '':
+        paraids = list(np.load(paraids_file))
+        pred_dict = get_embed_similarity_scores(parapairids, paraids, emb_dir, emb_prefix, batch)
+        print("Writing parapair score file")
+        with open(outdir + '/emb-' + emb_prefix + '-cosine.json', 'w') as out:
+            json.dump(pred_dict, out)
+    else:
+        with open(proc_text, 'r') as proc:
+            tokenized = json.load(proc)
+        pred_dict = get_similarity_scores(tokenized, parapairids, model_type, model_path, batch)
+        model_name = model_path.split('/')[len(model_path.split('/')) - 1]
+        print("Writing parapair score file")
+        with open(outdir + '/' + model_name + '.json', 'w') as out:
+            json.dump(pred_dict, out)
 
 if __name__ == '__main__':
     main()
