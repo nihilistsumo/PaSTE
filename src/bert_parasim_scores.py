@@ -99,6 +99,7 @@ def get_para_embed_vec(pid, paraids, embed_dir, embed_file_prefix, batch_size):
 
 def get_embed_similarity_scores(pair_ids, paraids, embed_dir, embed_file_prefix, batch_size):
     pred_dict = dict()
+    c = 10000
     if batch_size == -1:
         emb_list = np.load(embed_dir + '/' + embed_file_prefix + '-part1.npy')
     for i in range(len(pair_ids)):
@@ -111,7 +112,7 @@ def get_embed_similarity_scores(pair_ids, paraids, embed_dir, embed_file_prefix,
             p1vec = get_para_embed_vec(p1, paraids, embed_dir, embed_file_prefix, batch_size)
             p2vec = get_para_embed_vec(p2, paraids, embed_dir, embed_file_prefix, batch_size)
         pred_dict[pair_ids[i]] = 1 - distance.cosine(p1vec, p2vec)
-        if i % batch_size == 0:
+        if i % c == 0:
             print(str(i) + ' predictions received')
     return pred_dict
 
