@@ -99,11 +99,17 @@ def get_para_embed_vec(pid, paraids, embed_dir, embed_file_prefix, batch_size):
 
 def get_embed_similarity_scores(pair_ids, paraids, embed_dir, embed_file_prefix, batch_size):
     pred_dict = dict()
+    if batch_size == -1:
+        emb_list = np.load(embed_dir + '/' + embed_file_prefix + '-part1.npy')
     for i in range(len(pair_ids)):
         p1 = pair_ids[i].split('_')[0]
         p2 = pair_ids[i].split('_')[1]
-        p1vec = get_para_embed_vec(p1, paraids, embed_dir, embed_file_prefix, batch_size)
-        p2vec = get_para_embed_vec(p2, paraids, embed_dir, embed_file_prefix, batch_size)
+        if batch_size == -1:
+            p1vec = emb_list[paraids.index(p1)]
+            p2vec = emb_list[paraids.index(p2)]
+        else:
+            p1vec = get_para_embed_vec(p1, paraids, embed_dir, embed_file_prefix, batch_size)
+            p2vec = get_para_embed_vec(p2, paraids, embed_dir, embed_file_prefix, batch_size)
         pred_dict[pair_ids[i]] = 1 - distance.cosine(p1vec, p2vec)
         if i % batch_size == 0:
             print(str(i) + ' predictions received')
@@ -116,7 +122,8 @@ def main():
     parser.add_argument('-n', '--model_type', default='', help='Type of model (bert/roberta/albert/xlnet/xlmroberta/flaubert)')
     parser.add_argument('-m', '--model_path', default='', help='Path to pre-trained/fine tuned model')
     parser.add_argument('-b', '--batch_size', help='In case of transformer models: Batch size of the tensors submitted to GPU\n'
-                                                   'In case of embedding models: Size of each para embedding shards')
+                                                   'In case of embedding models: Size of each para embedding shards if there\n'
+                                                   'are multiple shards or -1 if there is a single embedding file')
     parser.add_argument('-i', '--paraids_emb', help='Path to paraids file corresponding to the para embeddings')
     parser.add_argument('-e', '--emb_dir', help='Path to the para embedding dir')
     parser.add_argument('-x', '--emb_file_prefix', help='Common part of the file name of each embedding shards')
