@@ -34,6 +34,7 @@ def get_embeddings(paratext_file, model_name, outdir, saveid=False, batch_size=1
             np.save(outdir + '/paraids', ids)
 
 def get_sentence_wise_embeddings(paratext_file, model_name, outdir, saveid=False, batch_size=10000):
+    spacy.prefer_gpu()
     nlp = spacy.load('en_core_web_sm')
     model = SentenceTransformer(model_name)
     print("Using " + model_name + " to embed paras sentence wise")
