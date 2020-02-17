@@ -49,7 +49,9 @@ def get_sentence_wise_embeddings(paratext_file, model_name, outdir, saveid=False
             c += 1
             if c % batch_size == 0:
                 print("Going to embed")
-                texts = [s for s in nlp(p).sents for p in texts]
+                sent_iters = [nlp(p).sents for p in texts]
+                for p in sent_iters:
+                    texts.append([s for s in p])
                 embeds = np.array([model.encode(p_sents) for p_sents in texts])
                 part += 1
                 print("Embedding complete, going to save part " + str(part) + ", " + str(c) + " paras embedded\n")
