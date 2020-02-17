@@ -46,8 +46,8 @@ def get_sentence_wise_embeddings(paratext_file, model_name, outdir, saveid=False
         for l in pt:
             paraid = l.split('\t')[0]
             text = l.split('\t')[1]
-            #text_sents = [str(s) for s in nlp(text).sents]
-            text_sents = text.split('.')
+            text_sents = [str(s) for s in nlp(text).sents]
+            #text_sents = text.split('.')
             for i in range(len(text_sents)):
                 ids.append(paraid+'_'+str(i+1))
             texts += text_sents
