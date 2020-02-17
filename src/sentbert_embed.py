@@ -44,29 +44,29 @@ def get_sentence_wise_embeddings(paratext_file, model_name, outdir, saveid=False
         texts = []
         ids = []
         for l in pt:
-            ids.append(l.split('\t')[0])
-            texts.append(l.split('\t')[1])
+            paraid = l.split('\t')[0]
+            text = l.split('\t')[1]
+            text_sents = [s for s in nlp(text)]
+            for i in range(len(text_sents)):
+                ids.append(paraid+'_'+str(i+1))
+            texts += text_sents
             c += 1
             if c % batch_size == 0:
                 print("Going to embed")
-                sent_iters = [nlp(p).sents for p in texts]
-                for p in sent_iters:
-                    texts.append([s for s in p])
-                embeds = np.array([model.encode(p_sents) for p_sents in texts])
+                embeds = model.encode(texts)
                 part += 1
                 print("Embedding complete, going to save part " + str(part) + ", " + str(c) + " paras embedded\n")
                 np.save(outdir + '/' + model_name + '-part' + str(part), embeds)
                 texts = []
         print("Going to embed")
-        texts = [nlp(p).sents for p in texts]
-        embeds = np.array([model.encode(p_sents) for p_sents in texts])
+        embeds = model.encode(texts)
         part += 1
         print("Embedding complete, going to save part " + str(part) + ", " + str(c) + " paras embedded\n")
         np.save(outdir + '/' + model_name + '-part' + str(part), embeds)
         if saveid:
             print("Saving paraids file")
             ids = np.array(ids)
-            np.save(outdir + '/paraids', ids)
+            np.save(outdir + '/paraids_sents', ids)
 
 def main():
     parser = argparse.ArgumentParser(description='Use sentence-transformers to embed paragraphs')
