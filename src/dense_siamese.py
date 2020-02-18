@@ -180,7 +180,7 @@ def dense_siamese(Xtrain, ytrain, Xval, yval, Xtest, ytest, embed_vec_len, optim
 
     # distance_out_layer = Dense(1, activation='sigmoid', input_shape=(layer_size,), kernel_regularizer=regularizers.l2(0.001), name='distance')(dist_output)
     # distance_out_layer = Dense(1, activation='sigmoid', input_shape=(2 * layer_size,), kernel_regularizer=regularizers.l2(0.001), name='distance')(concats_out)
-    distance_out_layer = Dense(1, activation='relu', input_shape=(2 * layer_size,),
+    distance_out_layer = Dense(1, activation='sigmoid', input_shape=(2 * layer_size,),
                                kernel_regularizer=regularizers.l2(0.001), name='distance')(d3_out)
 
     # main_output = Dense(1, activation='sigmoid')(distance_out_layer)
