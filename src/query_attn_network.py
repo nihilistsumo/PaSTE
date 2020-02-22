@@ -86,7 +86,7 @@ def get_data(emb_dir, emb_model_name, query_attn_data_file):
             p1emb = para_emb[paraids.index(l.split('\t')[2])]
             p2emb = para_emb[paraids.index(l.split('\t')[3].rstrip())]
             X_train.append(np.hstack((qemb, p1emb, p2emb)))
-    return (np.array(X_train), np.array(y_train))
+    return (torch.tensor(X_train), torch.tensor(y_train))
 
 def main():
     cosine_sim = nn.CosineSimilarity()
