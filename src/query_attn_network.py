@@ -86,10 +86,13 @@ def get_data(emb_dir, emb_model_name, query_attn_data_file):
             p1emb = para_emb[paraids.index(l.split('\t')[2])]
             p2emb = para_emb[paraids.index(l.split('\t')[3].rstrip())]
             X_train.append(np.hstack((qemb, p1emb, p2emb)))
-    return (X_train, y_train)
+    return (np.array(X_train), np.array(y_train))
 
 def main():
     cosine_sim = nn.CosineSimilarity()
+    NN = Neural_Network()
+    criterion = nn.MSELoss()
+    opt = optim.SGD(NN.parameters(), lr=0.01)
     # X = torch.tensor(torch.randn(256, 12))
     # target = torch.tensor(torch.tensor(([0.1, 0, 0, 0.4], [0, 0.3, 0.2, 0.1], [0.1, 0.2, 0.2, 0.1], [0, 0.8, 0.1, 0.1])))
     #
@@ -121,9 +124,6 @@ def main():
         X_test, y_test = get_data(emb_dir, model_name, test_filepath)
     else:
         X_test, y_test = get_data(emb_dir_test, model_name, test_filepath)
-    NN = Neural_Network()
-    criterion = nn.MSELoss()
-    opt = optim.SGD(NN.parameters(), lr=0.01)
     for i in range(1000):  # trains the NN 1,000 times
         opt.zero_grad()
         output = NN(X)
