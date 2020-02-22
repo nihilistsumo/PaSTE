@@ -91,7 +91,7 @@ def get_data(emb_dir, emb_model_name, query_attn_data_file):
 def main():
     cosine_sim = nn.CosineSimilarity()
     NN = Neural_Network()
-    criterion = nn.MSELoss()
+    criterion = nn.HingeEmbeddingLoss()
     opt = optim.SGD(NN.parameters(), lr=0.01)
     # X = torch.tensor(torch.randn(256, 12))
     # target = torch.tensor(torch.tensor(([0.1, 0, 0, 0.4], [0, 0.3, 0.2, 0.1], [0.1, 0.2, 0.2, 0.1], [0, 0.8, 0.1, 0.1])))
