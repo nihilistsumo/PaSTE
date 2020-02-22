@@ -84,7 +84,7 @@ def get_data(emb_dir, emb_model_name, query_attn_data_file):
             y_train.append(int(l.split('\t')[0]))
             qemb = model.encode([l.split('\t')[1]])[0]
             p1emb = para_emb[paraids.index(l.split('\t')[2])]
-            p2emb = para_emb[paraids.index(l.split('\t')[3])]
+            p2emb = para_emb[paraids.index(l.split('\t')[3].rstrip())]
             X_train.append(np.hstack((qemb, p1emb, p2emb)))
     return (X_train, y_train)
 
