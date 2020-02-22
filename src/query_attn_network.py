@@ -4,6 +4,7 @@ import torch.optim as optim
 from sentence_transformers import SentenceTransformer
 import numpy as np
 import random
+import argparse
 
 class Neural_Network(nn.Module):
     def __init__(self, ):
@@ -103,6 +104,23 @@ def main():
     # X_testp2 = torch.matmul(X_test[:, 8:], torch.t(X_testq))
     # y_test = cosine_sim(X_testp1, X_testp2)
 
+    parser = argparse.ArgumentParser(description="Train and evaluate query attentive network for paragraph similarity task")
+    parser.add_argument('-e', '--emb_dir', help='Path to para embedding directory')
+    parser.add_argument('-et', '--emb_dir_test', help='Path to para embedding directory for test split paras')
+    parser.add_argument('-m', '--emb_model_name', help='Name of the model used to embed the paras')
+    parser.add_argument('-d', '--train_data_file', help='Path to train data file')
+    parser.add_argument('-t', '--test_data_file', help='Path to test data file')
+    args = vars(parser.parse_args())
+    emb_dir = args['emb_dir']
+    emb_dir_test = args['emb_dir_test']
+    model_name = args['emb_model_name']
+    train_filepath = args['train_data_file']
+    test_filepath = args['test_data_file']
+    X, y = get_data(emb_dir, model_name, train_filepath)
+    if emb_dir_test == '':
+        X_test, y_test = get_data(emb_dir, model_name, test_filepath)
+    else:
+        X_test, y_test = get_data(emb_dir_test, model_name, test_filepath)
     NN = Neural_Network()
     criterion = nn.MSELoss()
     opt = optim.SGD(NN.parameters(), lr=0.01)
