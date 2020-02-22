@@ -81,7 +81,7 @@ def get_data(emb_dir, emb_model_name, query_attn_data_file):
     y_train = []
     with open(query_attn_data_file, 'r') as qd:
         for l in qd:
-            y_train.append(int(l.split('\t')[0]))
+            y_train.append(float(l.split('\t')[0]))
             qemb = model.encode([l.split('\t')[1]])[0]
             p1emb = para_emb[paraids.index(l.split('\t')[2])]
             p2emb = para_emb[paraids.index(l.split('\t')[3].rstrip())]
@@ -91,7 +91,7 @@ def get_data(emb_dir, emb_model_name, query_attn_data_file):
 def main():
     cosine_sim = nn.CosineSimilarity()
     NN = Neural_Network()
-    criterion = nn.L1Loss()
+    criterion = nn.MSELoss()
     opt = optim.SGD(NN.parameters(), lr=0.01)
     # X = torch.tensor(torch.randn(256, 12))
     # target = torch.tensor(torch.tensor(([0.1, 0, 0, 0.4], [0, 0.3, 0.2, 0.1], [0.1, 0.2, 0.2, 0.1], [0, 0.8, 0.1, 0.1])))
