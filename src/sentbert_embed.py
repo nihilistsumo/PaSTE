@@ -16,7 +16,11 @@ class SentbertParaEmbedding():
         curr_part_emb = None
         part = -1
         for p in paraid_list:
-            p_index = self.paraids.index(p)
+            if p in self.paraids:
+                p_index = self.paraids.index(p)
+            else:
+                print(p + ' not found in embedding dir')
+                continue
             curr_part = p_index // self.batch_size + 1
             offset = p_index % self.batch_size
             if curr_part == part:

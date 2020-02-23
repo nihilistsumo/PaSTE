@@ -152,11 +152,16 @@ def get_data(emb_dir, emb_file_prefix, emb_paraids_file, query_attn_data_file, e
     y_train = []
     with open(query_attn_data_file, 'r') as qd:
         for l in qd:
-            y_train.append(float(l.split('\t')[0]))
             qemb = model.encode([l.split('\t')[1]])[0]
-            p1emb = para_emb_dict[l.split('\t')[2]]
-            p2emb = para_emb_dict[l.split('\t')[3].rstrip()]
+            p1 = l.split('\t')[2]
+            p2 = l.split('\t')[3].rstrip()
+            if p1 in para_emb_dict.keys() and p2 in para_emb_dict.keys():
+                p1emb = para_emb_dict[p1]
+                p2emb = para_emb_dict[p2]
+            else:
+                continue
             X_train.append(np.hstack((qemb, p1emb, p2emb)))
+            y_train.append(float(l.split('\t')[0]))
     return (torch.tensor(X_train), torch.tensor(y_train))
 
 def main():
