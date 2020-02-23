@@ -5,7 +5,7 @@ import torch.optim as optim
 from sentence_transformers import SentenceTransformer
 import numpy as np
 from sklearn.metrics import roc_auc_score
-from src.sentbert_embed import SentbertParaEmbedding
+from .sentbert_embed import SentbertParaEmbedding
 import random
 import json
 import argparse
