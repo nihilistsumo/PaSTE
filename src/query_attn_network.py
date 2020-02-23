@@ -48,9 +48,9 @@ class Neural_Network_scale(nn.Module):
         self.LL1 = nn.Linear(self.emb_size, self.emb_size)
 
     def forward(self, X):
-        self.Xq = X[:, :self.emb_size]
-        self.Xp1 = X[:, self.emb_size:2*self.emb_size]
-        self.Xp2 = X[:, 2*self.emb_size:]
+        self.Xq = F.normalize(X[:, :self.emb_size], p=2, dim=1)
+        self.Xp1 = F.normalize(X[:, self.emb_size:2*self.emb_size], p=2, dim=1)
+        self.Xp2 = F.normalize(X[:, 2*self.emb_size:], p=2, dim=1)
         self.z = torch.relu(self.LL1(self.Xq))
         self.sXp1 = F.normalize(torch.mul(self.Xp1, self.z), p=2, dim=1)
         self.sXp2 = F.normalize(torch.mul(self.Xp2, self.z), p=2, dim=1)
