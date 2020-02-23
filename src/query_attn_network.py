@@ -5,6 +5,7 @@ import torch.optim as optim
 from sentence_transformers import SentenceTransformer
 import numpy as np
 from sklearn.metrics import roc_auc_score
+from .sentbert_embed import SentbertParaEmbedding
 import random
 import json
 import argparse
@@ -127,19 +128,34 @@ def write_query_attn_dataset_parapair(parapair_data, outfile):
         for d in data:
             out.write(d+'\n')
 
-def get_data(emb_dir, emb_model_name, query_attn_data_file):
-    model = SentenceTransformer(emb_model_name)
-    print("Using " + emb_model_name + " to embed query, should be same as the embedding file")
-    para_emb = np.load(emb_dir + '/' + emb_model_name + '-part1.npy')
-    paraids = list(np.load(emb_dir + '/paraids.npy'))
+def get_data(emb_dir, emb_file_prefix, emb_paraids_file, query_attn_data_file, emb_mode, batch_size=10000):
+    model = SentenceTransformer(emb_file_prefix)
+    print("Using " + emb_file_prefix + " to embed query, should be same as the embedding file")
+    paraids = list(np.load(emb_paraids_file))
+    if emb_mode == 's':
+        para_emb = np.load(emb_dir + '/' + emb_file_prefix + '-part1.npy')
+        para_emb_dict = dict()
+        for i in range(len(paraids)):
+            para_emb_dict[paraids[i]] = para_emb[i]
+    elif emb_mode == 'm':
+        emb = SentbertParaEmbedding(emb_paraids_file, emb_dir, emb_file_prefix, batch_size)
+        paraids_dat = set()
+        with open(query_attn_data_file, 'r') as qd:
+            for l in qd:
+                paraids_dat.add(l.split('\t')[2])
+                paraids_dat.add(l.split('\t')[3].rstrip())
+        para_emb_dict = emb.get_embeddings(list(paraids_dat))
+    else:
+        print('Embedding mode not supported')
+        return 1
     X_train = []
     y_train = []
     with open(query_attn_data_file, 'r') as qd:
         for l in qd:
             y_train.append(float(l.split('\t')[0]))
             qemb = model.encode([l.split('\t')[1]])[0]
-            p1emb = para_emb[paraids.index(l.split('\t')[2])]
-            p2emb = para_emb[paraids.index(l.split('\t')[3].rstrip())]
+            p1emb = para_emb_dict[l.split('\t')[2]]
+            p2emb = para_emb_dict[l.split('\t')[3].rstrip()]
             X_train.append(np.hstack((qemb, p1emb, p2emb)))
     return (torch.tensor(X_train), torch.tensor(y_train))
 
@@ -164,7 +180,11 @@ def main():
     parser.add_argument('-n', '--neural_model', help='Neural model variation (1/2)')
     parser.add_argument('-lr', '--learning_rate', help='Learning rate')
     parser.add_argument('-i', '--num_iteration', help='No. of iteration')
-    parser.add_argument('-m', '--emb_model_name', help='Name of the model used to embed the paras')
+    parser.add_argument('-m', '--emb_file_prefix', help='Name of the model used to embed the paras/ embedding file prefix')
+    parser.add_argument('-p', '--emb_paraids_file', help='Path to train embedding paraids file')
+    parser.add_argument('-pt', '--test_emb_paraids_file', help='Path to test embedding paraids file')
+    parser.add_argument('-em', '--emb_mode', help='Embedding mode: s=single embedding file, m=multi emb files in shards')
+    parser.add_argument('-b', '--emb_batch_size', help='Batch size of each embedding file shard')
     parser.add_argument('-d', '--train_data_file', help='Path to train data file')
     parser.add_argument('-t', '--test_data_file', help='Path to test data file')
     parser.add_argument('-o', '--model_outfile', help='Path to save the trained model')
@@ -174,15 +194,19 @@ def main():
     variation = int(args['neural_model'])
     lrate = float(args['learning_rate'])
     iter = int(args['num_iteration'])
-    model_name = args['emb_model_name']
+    emb_prefix = args['emb_file_prefix']
+    emb_pids_file = args['emb_paraids_file']
+    test_emb_pids_file = args['test_emb_paraids_file']
+    emb_mode = args['emb_mode']
+    emb_batch = args['emb_batch_size']
     train_filepath = args['train_data_file']
     test_filepath = args['test_data_file']
     model_out = args['model_outfile']
-    X, y = get_data(emb_dir, model_name, train_filepath)
+    X, y = get_data(emb_dir, emb_prefix, emb_pids_file, train_filepath, emb_mode, emb_batch)
     if emb_dir_test == '':
-        X_test, y_test = get_data(emb_dir, model_name, test_filepath)
+        X_test, y_test = get_data(emb_dir, emb_prefix, test_emb_pids_file, test_filepath, 's')
     else:
-        X_test, y_test = get_data(emb_dir_test, model_name, test_filepath)
+        X_test, y_test = get_data(emb_dir_test, emb_prefix, test_emb_pids_file, test_filepath, 's')
 
     cosine_sim = nn.CosineSimilarity()
     if variation == 1:
