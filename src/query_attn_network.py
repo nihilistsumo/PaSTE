@@ -180,7 +180,7 @@ def main():
         loss.backward()
         opt.step()
     # NN.saveWeights(NN)
-    y_pred = NN.predict(X_test)
+    y_pred = NN.predict(X_test).detach().numpy()
     auc_score = roc_auc_score(y_test, y_pred)
     print('AUC score: ' + str(auc_score))
     #print(NN.parameters())
