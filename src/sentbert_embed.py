@@ -3,6 +3,29 @@ import argparse
 import numpy as np
 import spacy
 
+class SentbertParaEmbedding():
+    def __init__(self, paraid_file, embed_dir, embed_file_prefix, batch_size):
+        self.paraids = list(np.load(paraid_file))
+        self.emb_dir = embed_dir
+        self.prefix = embed_file_prefix
+        self.batch_size = batch_size
+
+    def get_embeddings(self, paraid_list):
+        print('Going to retrieve embeddings for ' + str(len(paraid_list)) + ' paras')
+        emb_dict = dict()
+        curr_part_emb = None
+        part = -1
+        for p in paraid_list:
+            p_index = self.paraids.index(p)
+            curr_part = p_index // self.batch_size + 1
+            offset = p_index % self.batch_size
+            if curr_part == part:
+                emb_dict[p] = curr_part_emb[offset]
+            else:
+                curr_part_emb = np.load(self.emb_dir + '/' + self.prefix + '-part' + str(curr_part) + '.npy')
+                emb_dict[p] = curr_part_emb[offset]
+        return emb_dict
+
 # get embeddings of the whole para
 def get_embeddings(paratext_file, model_name, outdir, saveid=False, batch_size=10000):
     model = SentenceTransformer(model_name)
