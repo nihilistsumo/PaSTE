@@ -198,7 +198,7 @@ def main():
     emb_pids_file = args['emb_paraids_file']
     test_emb_pids_file = args['test_emb_paraids_file']
     emb_mode = args['emb_mode']
-    emb_batch = args['emb_batch_size']
+    emb_batch = int(args['emb_batch_size'])
     train_filepath = args['train_data_file']
     test_filepath = args['test_data_file']
     model_out = args['model_outfile']
