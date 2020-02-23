@@ -4,6 +4,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from sentence_transformers import SentenceTransformer
 import numpy as np
+from sklearn.metrics import roc_auc_score
 import random
 import argparse
 
@@ -66,7 +67,9 @@ class Neural_Network_scale(nn.Module):
     def predict(self, X_test):
         print("Predicted data based on trained weights: ")
         print("Input (scaled): \n" + str(X_test))
-        print("Output: " + str(self.forward(X_test)))
+        y_pred = self.forward(X_test)
+        print("Output: " + str(y_pred))
+        return y_pred
 
 def write_query_attn_dataset(bert_data, art_qrels, outfile, num_samples=1000):
     art_qrels_rev_dict = dict()
@@ -138,6 +141,7 @@ def main():
     parser.add_argument('-et', '--emb_dir_test', help='Path to para embedding directory for test split paras')
     parser.add_argument('-n', '--neural_model', help='Neural model variation (1/2)')
     parser.add_argument('-lr', '--learning_rate', help='Learning rate')
+    parser.add_argument('-i', '--num_iteration', help='No. of iteration')
     parser.add_argument('-m', '--emb_model_name', help='Name of the model used to embed the paras')
     parser.add_argument('-d', '--train_data_file', help='Path to train data file')
     parser.add_argument('-t', '--test_data_file', help='Path to test data file')
@@ -147,6 +151,7 @@ def main():
     emb_dir_test = args['emb_dir_test']
     variation = int(args['neural_model'])
     lrate = float(args['learning_rate'])
+    iter = int(args['num_iteration'])
     model_name = args['emb_model_name']
     train_filepath = args['train_data_file']
     test_filepath = args['test_data_file']
@@ -167,7 +172,7 @@ def main():
         exit(1)
     criterion = nn.MSELoss()
     opt = optim.SGD(NN.parameters(), lr=lrate)
-    for i in range(1000):  # trains the NN 1,000 times
+    for i in range(iter):  # trains the NN 1,000 times
         opt.zero_grad()
         output = NN(X)
         loss = criterion(output, y)
@@ -175,10 +180,12 @@ def main():
         loss.backward()
         opt.step()
     # NN.saveWeights(NN)
-    NN.predict(X_test)
-    print(NN.parameters())
-    print('True output: ' + str(y_test))
-    print('Features: ' + str(NN.num_flat_features(X_test)))
+    y_pred = NN.predict(X_test)
+    auc_score = roc_auc_score(y_test, y_pred)
+    print('AUC score: ' + str(auc_score))
+    #print(NN.parameters())
+    #print('True output: ' + str(y_test))
+    #print('Features: ' + str(NN.num_flat_features(X_test)))
     print('Saving model at ' + model_out)
     torch.save(NN.state_dict(), model_out)
 
