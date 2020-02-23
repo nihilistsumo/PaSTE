@@ -6,6 +6,7 @@ from sentence_transformers import SentenceTransformer
 import numpy as np
 from sklearn.metrics import roc_auc_score
 import random
+import json
 import argparse
 
 class Neural_Network(nn.Module):
@@ -71,7 +72,7 @@ class Neural_Network_scale(nn.Module):
         print("Output: " + str(y_pred))
         return y_pred
 
-def write_query_attn_dataset(bert_data, art_qrels, outfile, num_samples=1000):
+def write_query_attn_dataset_bert(bert_data, art_qrels, outfile, num_samples=1000):
     art_qrels_rev_dict = dict()
     with open(art_qrels, 'r') as aq:
         for l in aq:
@@ -89,17 +90,38 @@ def write_query_attn_dataset(bert_data, art_qrels, outfile, num_samples=1000):
                 p1 = l.split('\t')[1]
                 p2 = l.split('\t')[2]
                 art = art_qrels_rev_dict[p1]
-                assert art == art_qrels_rev_dict[p2]
-                negdata.append('0\t' + art.split(':')[1].replace('%20', ' ') + '\t' + p1 + '\t' + p2)
+                if art != art_qrels_rev_dict[p2]:
+                    print('p1 art: ' + art + ' p2 art: ' + art_qrels_rev_dict[p2])
+                else:
+                    negdata.append('0\t' + art.split(':')[1].replace('%20', ' ') + '\t' + p1 + '\t' + p2)
             elif len(posdata) < num_samples // 2:
                 p1 = l.split('\t')[1]
                 p2 = l.split('\t')[2]
                 art = art_qrels_rev_dict[p1]
-                assert art == art_qrels_rev_dict[p2]
-                posdata.append('1\t' + art.split(':')[1].replace('%20', ' ') + '\t' + p1 + '\t' + p2)
+                if art != art_qrels_rev_dict[p2]:
+                    print('p1 art: ' + art + ' p2 art: ' + art_qrels_rev_dict[p2])
+                else:
+                    posdata.append('1\t' + art.split(':')[1].replace('%20', ' ') + '\t' + p1 + '\t' + p2)
             if len(posdata) + len(negdata) >= num_samples:
                 break
     data = posdata + negdata
+    random.shuffle(data)
+    with open(outfile, 'w') as out:
+        for d in data:
+            out.write(d+'\n')
+
+def write_query_attn_dataset_parapair(parapair_data, outfile):
+    with open(parapair_data, 'r') as pp:
+        pp_data = json.load(pp)
+    data = []
+    for page in pp_data.keys():
+        page_labels = pp_data[page]['labels']
+        if len(page_labels) == 0:
+            continue
+        page_pairs = pp_data[page]['parapairs']
+        for i in range(len(page_labels)):
+            data.append(str(page_labels[i]) + '\t' + page.split(':')[1].replace('%20', ' ') + '\t' +
+                        page_pairs[i].split('_')[0] + '\t' + page_pairs[i].split('_')[1])
     random.shuffle(data)
     with open(outfile, 'w') as out:
         for d in data:
