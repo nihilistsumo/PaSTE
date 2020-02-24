@@ -6,6 +6,7 @@ from transformers import XLMForSequenceClassification
 import numpy as np
 import json
 import torch
+import torch.nn.functional as F
 import argparse
 from scipy.spatial import distance
 
@@ -97,7 +98,7 @@ def get_para_embed_vec(pid, paraids, embed_dir, embed_file_prefix, batch_size):
     emb_vec = embed_arr[part_offset]
     return emb_vec
 
-def get_embed_similarity_scores(pair_ids, paraids, embed_dir, embed_file_prefix, batch_size):
+def get_embed_similarity_scores(pair_ids, paraids, embed_dir, embed_file_prefix, batch_size, norm=-1):
     pred_dict = dict()
     c = 10000
     if batch_size == -1:
@@ -111,7 +112,10 @@ def get_embed_similarity_scores(pair_ids, paraids, embed_dir, embed_file_prefix,
         else:
             p1vec = get_para_embed_vec(p1, paraids, embed_dir, embed_file_prefix, batch_size)
             p2vec = get_para_embed_vec(p2, paraids, embed_dir, embed_file_prefix, batch_size)
-        pred_dict[pair_ids[i]] = 1 - distance.cosine(p1vec, p2vec)
+        if norm == -1:
+            pred_dict[pair_ids[i]] = 1 - distance.cosine(p1vec, p2vec)
+        else:
+            pred_dict[pair_ids[i]] = 1 - distance.cosine(p1vec/np.linalg.norm(p1vec, norm), p2vec/np.linalg.norm(p2vec, norm))
         if i % c == 0:
             print(str(i) + ' predictions received')
     return pred_dict
@@ -128,6 +132,7 @@ def main():
     parser.add_argument('-i', '--paraids_emb', help='Path to paraids file corresponding to the para embeddings')
     parser.add_argument('-e', '--emb_dir', help='Path to the para embedding dir')
     parser.add_argument('-x', '--emb_file_prefix', help='Common part of the file name of each embedding shards')
+    parser.add_argument('-nm', '--normalization', default=-1, help='Normalization for embedding vecs (-1 for no norm)')
     parser.add_argument('-o', '--outdir', help='Path to parapair score output directory')
     args = vars(parser.parse_args())
     pp_file = args['parapair_file']
@@ -138,11 +143,12 @@ def main():
     paraids_file = args['paraids_emb']
     emb_dir = args['emb_dir']
     emb_prefix = args['emb_file_prefix']
+    norm = int(args['normalization'])
     outdir = args['outdir']
     parapairids = get_pair_ids(pp_file)
     if model_path == '' and model_type == '':
         paraids = list(np.load(paraids_file))
-        pred_dict = get_embed_similarity_scores(parapairids, paraids, emb_dir, emb_prefix, batch)
+        pred_dict = get_embed_similarity_scores(parapairids, paraids, emb_dir, emb_prefix, batch, norm)
         print("Writing parapair score file")
         with open(outdir + '/emb-' + emb_prefix + '-cosine.json', 'w') as out:
             json.dump(pred_dict, out)
