@@ -5,7 +5,7 @@ import torch.optim as optim
 from sentence_transformers import SentenceTransformer
 import numpy as np
 from sklearn.metrics import roc_auc_score
-from sentbert_embed import SentbertParaEmbedding
+from src.sentbert_embed import SentbertParaEmbedding
 import random
 import json
 import argparse
@@ -73,11 +73,13 @@ class Neural_Network_scale(nn.Module):
         print("Output: " + str(y_pred))
         return y_pred
 
-def write_query_attn_dataset_bert(bert_data, art_qrels, outfile, num_samples=1000):
+def write_query_attn_dataset_bert(bert_data, art_qrels, outfile, num_samples=1000, emb_paraids_available=None):
     art_qrels_rev_dict = dict()
     with open(art_qrels, 'r') as aq:
         for l in aq:
             art_qrels_rev_dict[l.split(' ')[2]] = l.split(' ')[0]
+    if emb_paraids_available != None:
+        emb_paraids = list(np.load(emb_paraids_available))
     posdata = []
     negdata = []
     fl = True
@@ -87,17 +89,17 @@ def write_query_attn_dataset_bert(bert_data, art_qrels, outfile, num_samples=100
                 fl = False
                 continue
             label = l.split('\t')[0]
+            p1 = l.split('\t')[1]
+            p2 = l.split('\t')[2]
+            if p1 not in emb_paraids or p2 not in emb_paraids:
+                continue
             if label == '0' and len(negdata) < num_samples // 2:
-                p1 = l.split('\t')[1]
-                p2 = l.split('\t')[2]
                 art = art_qrels_rev_dict[p1]
                 if art != art_qrels_rev_dict[p2]:
                     print('p1 art: ' + art + ' p2 art: ' + art_qrels_rev_dict[p2])
                 else:
                     negdata.append('0\t' + art.split(':')[1].replace('%20', ' ') + '\t' + p1 + '\t' + p2)
             elif len(posdata) < num_samples // 2:
-                p1 = l.split('\t')[1]
-                p2 = l.split('\t')[2]
                 art = art_qrels_rev_dict[p1]
                 if art != art_qrels_rev_dict[p2]:
                     print('p1 art: ' + art + ' p2 art: ' + art_qrels_rev_dict[p2])
@@ -106,6 +108,7 @@ def write_query_attn_dataset_bert(bert_data, art_qrels, outfile, num_samples=100
             if len(posdata) + len(negdata) >= num_samples:
                 break
     data = posdata + negdata
+    print('Output data has ' + str(len(data)) + ' samples with ' + str(len(posdata)) + ' +ve and ' + str(len(negdata)) + ' -ve samples')
     random.shuffle(data)
     with open(outfile, 'w') as out:
         for d in data:
