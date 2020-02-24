@@ -133,7 +133,7 @@ def main():
     parser.add_argument('-e', '--emb_dir', help='Path to the para embedding dir')
     parser.add_argument('-x', '--emb_file_prefix', help='Common part of the file name of each embedding shards')
     parser.add_argument('-nm', '--normalization', default=-1, help='Normalization for embedding vecs (-1 for no norm)')
-    parser.add_argument('-o', '--outdir', help='Path to parapair score output directory')
+    parser.add_argument('-o', '--outfile', help='Path to parapair score output directory')
     args = vars(parser.parse_args())
     pp_file = args['parapair_file']
     proc_text = args['processed_textfile']
@@ -144,13 +144,13 @@ def main():
     emb_dir = args['emb_dir']
     emb_prefix = args['emb_file_prefix']
     norm = int(args['normalization'])
-    outdir = args['outdir']
+    outfile = args['outfile']
     parapairids = get_pair_ids(pp_file)
     if model_path == '' and model_type == '':
         paraids = list(np.load(paraids_file))
         pred_dict = get_embed_similarity_scores(parapairids, paraids, emb_dir, emb_prefix, batch, norm)
         print("Writing parapair score file")
-        with open(outdir + '/emb-' + emb_prefix + '-cosine.json', 'w') as out:
+        with open(outfile, 'w') as out:
             json.dump(pred_dict, out)
     else:
         with open(proc_text, 'r') as proc:
@@ -158,7 +158,7 @@ def main():
         pred_dict = get_similarity_scores(tokenized, parapairids, model_type, model_path, batch)
         model_name = model_path.split('/')[len(model_path.split('/')) - 1]
         print("Writing parapair score file")
-        with open(outdir + '/' + model_name + '.json', 'w') as out:
+        with open(outfile, 'w') as out:
             json.dump(pred_dict, out)
 
 if __name__ == '__main__':
