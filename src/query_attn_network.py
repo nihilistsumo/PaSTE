@@ -21,8 +21,9 @@ class Dummy_cosine_sim():
         self.Xq = X[:, :self.emb_size]
         self.Xp1 = X[:, self.emb_size:2*self.emb_size]
         self.Xp2 = X[:, 2*self.emb_size:]
-
+        print("Input (scaled): \n" + str(X))
         o = self.cosine_sim(self.Xp1, self.Xp2)
+        print("Output: " + str(o))
         return o
 
     def num_flat_features(self, X):
@@ -31,11 +32,6 @@ class Dummy_cosine_sim():
         for s in size:
             num_features *= s
         return num_features
-
-    def predict(self, X_test):
-        print("Predicted data based on trained weights: ")
-        print("Input (scaled): \n" + str(X_test))
-        print("Output: " + str(self.forward(X_test)))
 
 class Neural_Network(nn.Module):
     def __init__(self, ):
@@ -66,7 +62,9 @@ class Neural_Network(nn.Module):
     def predict(self, X_test):
         print("Predicted data based on trained weights: ")
         print("Input (scaled): \n" + str(X_test))
-        print("Output: " + str(self.forward(X_test)))
+        y_pred = self.forward(X_test)
+        print("Output: " + str(y_pred))
+        return y_pred
 
 class Neural_Network_scale(nn.Module):
     def __init__(self, ):
