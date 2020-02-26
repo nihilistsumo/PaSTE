@@ -10,6 +10,33 @@ import random
 import json
 import argparse
 
+class Dummy_cosine_sim(nn.Module):
+    def __init__(self, ):
+        super(Dummy_cosine_sim, self).__init__()
+        # parameters
+        self.emb_size = 768
+        self.cosine_sim = nn.CosineSimilarity()
+
+    def forward(self, X):
+        self.Xq = X[:, :self.emb_size]
+        self.Xp1 = X[:, self.emb_size:2*self.emb_size]
+        self.Xp2 = X[:, 2*self.emb_size:]
+
+        o = self.cosine_sim(self.Xp1, self.Xp2)  # final activation function
+        return o
+
+    def num_flat_features(self, X):
+        size = X.size()[1:]  # all dimensions except the batch dimension
+        num_features = 1
+        for s in size:
+            num_features *= s
+        return num_features
+
+    def predict(self, X_test):
+        print("Predicted data based on trained weights: ")
+        print("Input (scaled): \n" + str(X_test))
+        print("Output: " + str(self.forward(X_test)))
+
 class Neural_Network(nn.Module):
     def __init__(self, ):
         super(Neural_Network, self).__init__()
@@ -257,6 +284,8 @@ def main():
         NN = Neural_Network()
     elif variation == 2:
         NN = Neural_Network_scale()
+    elif variation == 0:
+        NN = Dummy_cosine_sim()
     else:
         print('Wrong model variation selected!')
         exit(1)
