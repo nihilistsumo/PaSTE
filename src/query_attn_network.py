@@ -107,11 +107,12 @@ class Neural_Network_siamese(nn.Module):
         self.LL1 = nn.Linear(self.emb_size, self.emb_size)
 
     def forward(self, X):
-        self.Xp1 = X[:, :self.emb_size]
-        self.Xp2 = X[:, self.emb_size:]
+        self.Xq = X[:, :self.emb_size]
+        self.Xp1 = X[:, self.emb_size:2 * self.emb_size]
+        self.Xp2 = X[:, 2 * self.emb_size:]
         self.z1 = torch.relu(self.LL1(self.Xp1))
         self.z2 = torch.relu(self.LL1(self.Xp2))
-        o = self.cosine_sim(self.z1, self.z2)
+        o = self.cosine_sim(self.z1, self.z2)  # final activation function
         return o
 
     def num_flat_features(self, X):
@@ -278,16 +279,18 @@ def main():
         X_test, y_test = get_data(emb_dir_test, emb_prefix, test_emb_pids_file, test_filepath, 's')
 
     cosine_sim = nn.CosineSimilarity()
-    if variation == 1:
-        NN = Neural_Network()
-    elif variation == 2:
-        NN = Neural_Network_scale()
-    elif variation == 0:
+    if variation == 0:
         NN = Dummy_cosine_sim()
         y_pred = NN.forward(X_test)
         auc_score = roc_auc_score(y_test, y_pred)
         print('AUC score: ' + str(auc_score))
         sys.exit(0)
+    elif variation == 1:
+        NN = Neural_Network()
+    elif variation == 2:
+        NN = Neural_Network_scale()
+    elif variation == 3:
+        NN = Neural_Network_siamese()
     else:
         print('Wrong model variation selected!')
         exit(1)
