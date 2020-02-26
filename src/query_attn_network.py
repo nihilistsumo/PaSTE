@@ -9,10 +9,10 @@ from sentbert_embed import SentbertParaEmbedding
 import random
 import json
 import argparse
+import sys
 
-class Dummy_cosine_sim(nn.Module):
+class Dummy_cosine_sim():
     def __init__(self, ):
-        super(Dummy_cosine_sim, self).__init__()
         # parameters
         self.emb_size = 768
         self.cosine_sim = nn.CosineSimilarity()
@@ -22,7 +22,7 @@ class Dummy_cosine_sim(nn.Module):
         self.Xp1 = X[:, self.emb_size:2*self.emb_size]
         self.Xp2 = X[:, 2*self.emb_size:]
 
-        o = self.cosine_sim(self.Xp1, self.Xp2)  # final activation function
+        o = self.cosine_sim(self.Xp1, self.Xp2)
         return o
 
     def num_flat_features(self, X):
@@ -248,7 +248,7 @@ def main():
     parser = argparse.ArgumentParser(description='Train and evaluate query attentive network for paragraph similarity task')
     parser.add_argument('-e', '--emb_dir', help='Path to para embedding directory')
     parser.add_argument('-et', '--emb_dir_test', help='Path to para embedding directory for test split paras')
-    parser.add_argument('-n', '--neural_model', help='Neural model variation (1/2)')
+    parser.add_argument('-n', '--neural_model', help='Neural model variation (0/1/2)')
     parser.add_argument('-lr', '--learning_rate', help='Learning rate')
     parser.add_argument('-i', '--num_iteration', help='No. of iteration')
     parser.add_argument('-m', '--emb_file_prefix', help='Name of the model used to embed the paras/ embedding file prefix')
@@ -286,6 +286,10 @@ def main():
         NN = Neural_Network_scale()
     elif variation == 0:
         NN = Dummy_cosine_sim()
+        y_pred = NN.predict(X_test).detach().numpy()
+        auc_score = roc_auc_score(y_test, y_pred)
+        print('AUC score: ' + str(auc_score))
+        sys.exit(0)
     else:
         print('Wrong model variation selected!')
         exit(1)
