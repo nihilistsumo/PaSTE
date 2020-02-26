@@ -286,7 +286,7 @@ def main():
         NN = Neural_Network_scale()
     elif variation == 0:
         NN = Dummy_cosine_sim()
-        y_pred = NN.predict(X_test).detach().numpy()
+        y_pred = NN.predict(X_test).numpy()
         auc_score = roc_auc_score(y_test, y_pred)
         print('AUC score: ' + str(auc_score))
         sys.exit(0)
