@@ -110,8 +110,8 @@ class Neural_Network_siamese(nn.Module):
         self.Xq = X[:, :self.emb_size]
         self.Xp1 = X[:, self.emb_size:2 * self.emb_size]
         self.Xp2 = X[:, 2 * self.emb_size:]
-        self.z1 = torch.sigmoid(self.LL1(self.Xp1))
-        self.z2 = torch.sigmoid(self.LL1(self.Xp2))
+        self.z1 = torch.relu(self.LL1(self.Xp1))
+        self.z2 = torch.relu(self.LL1(self.Xp2))
         o = self.cosine_sim(self.z1, self.z2)  # final activation function
         return o
 
@@ -273,6 +273,11 @@ def main():
     test_filepath = args['test_data_file']
     model_out = args['model_outfile']
     X, y = get_data(emb_dir, emb_prefix, emb_pids_file, train_filepath, emb_mode, emb_batch)
+    num_samples = X.shape[0]
+    X_val = X[:100, :]
+    y_val = y[:100, :]
+    X_train = X[100:, :]
+    y_train = y[100:, :]
     if emb_dir_test == '':
         X_test, y_test = get_data(emb_dir, emb_prefix, test_emb_pids_file, test_filepath, 's')
     else:
@@ -298,9 +303,11 @@ def main():
     opt = optim.SGD(NN.parameters(), lr=lrate)
     for i in range(iter):  # trains the NN 1,000 times
         opt.zero_grad()
-        output = NN(X)
-        loss = criterion(output, y)
-        print('Iteration: ' + str(i) + ', loss: ' +str(loss))
+        output = NN(X_train)
+        loss = criterion(output, y_train)
+        y_val_pred = NN.predict(X_val).detach().numpy()
+        val_auc_score = roc_auc_score(y_val, y_val_pred)
+        print('Iteration: ' + str(i) + ', loss: ' +str(loss) + ', val AUC: ' +str(val_auc_score))
         loss.backward()
         opt.step()
     # NN.saveWeights(NN)
