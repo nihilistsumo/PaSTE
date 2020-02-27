@@ -10,7 +10,7 @@ import json
 import argparse
 import sys
 
-class Dummy_cosine_sim():
+class Dummy_Similarity_Network():
     def __init__(self, ):
         # parameters
         self.emb_size = 768
@@ -32,9 +32,9 @@ class Dummy_cosine_sim():
             num_features *= s
         return num_features
 
-class Neural_Network(nn.Module):
+class Query_Attn_Outprod_Network(nn.Module):
     def __init__(self, ):
-        super(Neural_Network, self).__init__()
+        super(Query_Attn_Outprod_Network, self).__init__()
         # parameters
         self.emb_size = 768
         self.cosine_sim = nn.CosineSimilarity()
@@ -65,9 +65,9 @@ class Neural_Network(nn.Module):
         #print("Output: " + str(y_pred))
         return y_pred
 
-class Neural_Network_scale(nn.Module):
+class Query_Attn_LL_Network(nn.Module):
     def __init__(self, ):
-        super(Neural_Network_scale, self).__init__()
+        super(Query_Attn_LL_Network, self).__init__()
         # parameters
         self.emb_size = 768
         self.cosine_sim = nn.CosineSimilarity()
@@ -97,9 +97,9 @@ class Neural_Network_scale(nn.Module):
         #print("Output: " + str(y_pred))
         return y_pred
 
-class Neural_Network_siamese(nn.Module):
+class Siamese_Network(nn.Module):
     def __init__(self, ):
-        super(Neural_Network_siamese, self).__init__()
+        super(Siamese_Network, self).__init__()
         # parameters
         self.emb_size = 768
         self.cosine_sim = nn.CosineSimilarity()

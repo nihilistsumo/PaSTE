@@ -1,6 +1,6 @@
 import argparse
 from data import process_qry_attn_data as dat
-from src.query_attn_network import Dummy_cosine_sim, Neural_Network, Neural_Network_scale, Neural_Network_siamese
+from src.query_attn_network import Dummy_Similarity_Network, Query_Attn_Outprod_Network, Query_Attn_LL_Network, Siamese_Network
 from sklearn.metrics import roc_auc_score
 import sys
 import torch
@@ -62,17 +62,17 @@ def main():
         X_test, y_test = dat.get_data(emb_dir_test, emb_prefix, test_emb_pids_file, test_filepath, 's')
 
     if variation == 0:
-        NN = Dummy_cosine_sim()
+        NN = Dummy_Similarity_Network()
         y_pred = NN.forward(X_test)
         auc_score = roc_auc_score(y_test, y_pred)
         print('AUC score: ' + str(auc_score))
         sys.exit(0)
     elif variation == 1:
-        NN = Neural_Network()
+        NN = Query_Attn_Outprod_Network()
     elif variation == 2:
-        NN = Neural_Network_scale()
+        NN = Query_Attn_LL_Network()
     elif variation == 3:
-        NN = Neural_Network_siamese()
+        NN = Siamese_Network()
     else:
         print('Wrong model variation selected!')
         exit(1)
