@@ -107,4 +107,4 @@ def get_data(emb_dir, emb_file_prefix, emb_paraids_file, query_attn_data_file, e
             X_train.append(np.hstack((qemb, p1emb, p2emb)))
             y_train.append(float(l.split('\t')[0]))
     X_train = minmax_scale(X_train)
-    return (torch.tensor(X_train, dtype=float), torch.tensor(y_train))
+    return (torch.tensor(X_train).float(), torch.tensor(y_train))
