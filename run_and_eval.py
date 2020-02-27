@@ -51,6 +51,7 @@ def main():
     train_filepath = args['train_data_file']
     test_filepath = args['test_data_file']
     model_out = args['model_outfile']
+    log_out = model_out + '.train.log'
     X, y = dat.get_data(emb_dir, emb_prefix, emb_pids_file, train_filepath, emb_mode, emb_batch)
 
     X_val = X[:100, :]
@@ -82,15 +83,18 @@ def main():
     criterion = nn.MSELoss()
     opt = optim.SGD(NN.parameters(), lr=lrate)
     print()
-    for i in range(iter):  # trains the NN 1,000 times
-        opt.zero_grad()
-        output = NN(X_train)
-        loss = criterion(output, y_train)
-        y_val_pred = NN.predict(X_val).detach().numpy()
-        val_auc_score = roc_auc_score(y_val, y_val_pred)
-        sys.stdout.write('\r' + 'Iteration: ' + str(i) + ', loss: ' +str(loss) + ', val AUC: ' +str(val_auc_score))
-        loss.backward()
-        opt.step()
+    with open(log_out, 'w') as lo:
+        for i in range(iter):  # trains the NN 1,000 times
+            opt.zero_grad()
+            output = NN(X_train)
+            loss = criterion(output, y_train)
+            y_val_pred = NN.predict(X_val).detach().numpy()
+            val_auc_score = roc_auc_score(y_val, y_val_pred)
+            sys.stdout.write('\r' + 'Iteration: ' + str(i) + ', loss: ' +str(loss) + ', val AUC: ' +str(val_auc_score))
+            if i%10 == 0:
+                lo.write('Iteration: ' + str(i) + ', loss: ' +str(loss) + ', val AUC: ' +str(val_auc_score) + '\n')
+            loss.backward()
+            opt.step()
     # NN.saveWeights(NN)
     y_pred = NN.predict(X_test).detach().numpy()
     auc_score = roc_auc_score(y_test, y_pred)
