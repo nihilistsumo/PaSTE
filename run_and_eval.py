@@ -1,6 +1,7 @@
 import argparse
 from data import process_qry_attn_data as dat
-from src.query_attn_network import Dummy_Similarity_Network, Query_Attn_Outprod_Network, Query_Attn_LL_Network, Siamese_Network
+from src.query_attn_network import Dummy_Similarity_Network, Query_Attn_ExpandLL_Network, Query_Attn_LL_Network, \
+    Siamese_Network, Query_Attn_InteractMatrix_Network
 from sklearn.metrics import roc_auc_score
 import sys
 import torch
@@ -68,11 +69,13 @@ def main():
         print('AUC score: ' + str(auc_score))
         sys.exit(0)
     elif variation == 1:
-        NN = Query_Attn_Outprod_Network()
+        NN = Query_Attn_ExpandLL_Network()
     elif variation == 2:
         NN = Query_Attn_LL_Network()
     elif variation == 3:
         NN = Siamese_Network()
+    elif variation == 4:
+        NN = Query_Attn_InteractMatrix_Network()
     else:
         print('Wrong model variation selected!')
         exit(1)

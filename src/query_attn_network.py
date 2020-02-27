@@ -32,9 +32,49 @@ class Dummy_Similarity_Network():
             num_features *= s
         return num_features
 
-class Query_Attn_Outprod_Network(nn.Module):
+class Query_Attn_InteractMatrix_Network(nn.Module):
     def __init__(self, ):
-        super(Query_Attn_Outprod_Network, self).__init__()
+        super(Query_Attn_InteractMatrix_Network, self).__init__()
+        # parameters
+        self.emb_size = 768
+        self.l1out_size = 96
+        self.l2out_size = 48
+        self.cosine_sim = nn.CosineSimilarity()
+        self.LL1 = nn.Linear(self.emb_size*self.emb_size, self.l1out_size)
+        self.LL2 = nn.Linear(self.l1out_size, self.l2out_size)
+
+    def forward(self, X):
+        self.Xq = X[:, :self.emb_size]
+        self.Xp1 = X[:, self.emb_size:2*self.emb_size]
+        self.Xp2 = X[:, 2*self.emb_size:]
+        self.qp1z = torch.einsum('bi,bj -> bij', (self.Xq, self.Xp1))
+        self.qp1z = torch.flatten(self.qp1z, start_dim=1)
+        self.qp2z = torch.einsum('bi,bj -> bij', (self.Xq, self.Xp2))
+        self.qp2z = torch.flatten(self.qp2z, start_dim=1)
+        self.p1l1 = torch.relu(self.LL1(self.qp1z))
+        self.p2l1 = torch.relu(self.LL1(self.qp2z))
+        self.p1l2 = torch.relu(self.LL2(self.p1l1))
+        self.p2l2 = torch.relu(self.LL2(self.p2l2))
+        o = self.cosine_sim(self.p1l2, self.p2l2)
+        return o
+
+    def num_flat_features(self, X):
+        size = X.size()[1:]  # all dimensions except the batch dimension
+        num_features = 1
+        for s in size:
+            num_features *= s
+        return num_features
+
+    def predict(self, X_test):
+        #print("Predicted data based on trained weights: ")
+        #print("Input (scaled): \n" + str(X_test))
+        y_pred = self.forward(X_test)
+        #print("Output: " + str(y_pred))
+        return y_pred
+
+class Query_Attn_ExpandLL_Network(nn.Module):
+    def __init__(self, ):
+        super(Query_Attn_ExpandLL_Network, self).__init__()
         # parameters
         self.emb_size = 768
         self.cosine_sim = nn.CosineSimilarity()
