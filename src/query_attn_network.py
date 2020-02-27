@@ -9,6 +9,7 @@ import random
 import json
 import argparse
 import sys
+from sklearn.preprocessing import minmax_scale
 
 class Dummy_Similarity_Network():
     def __init__(self, ):
@@ -114,9 +115,9 @@ class Query_Attn_LL_Network(nn.Module):
         self.LL1 = nn.Linear(self.emb_size, self.emb_size)
 
     def forward(self, X):
-        self.Xq = X[:, :self.emb_size]
-        self.Xp1 = X[:, self.emb_size:2*self.emb_size]
-        self.Xp2 = X[:, 2*self.emb_size:]
+        self.Xq = minmax_scale(X[:, :self.emb_size])
+        self.Xp1 = minmax_scale(X[:, self.emb_size:2*self.emb_size])
+        self.Xp2 = minmax_scale(X[:, 2*self.emb_size:])
         self.z = torch.relu(self.LL1(self.Xq))
         self.sXp1 = torch.mul(self.Xp1, self.z)
         self.sXp2 = torch.mul(self.Xp2, self.z)

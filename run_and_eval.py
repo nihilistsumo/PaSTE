@@ -90,7 +90,7 @@ def main():
             loss = criterion(output, y_train)
             y_val_pred = NN.predict(X_val).detach().numpy()
             val_auc_score = roc_auc_score(y_val, y_val_pred)
-            sys.stdout.write('\r' + 'Iteration: ' + str(i) + ', loss: ' +str(loss) + ', val AUC: ' +str(val_auc_score))
+            sys.stdout.write('\r' + 'Iteration: ' + str(i) + ', loss: ' +str(loss) + ', val AUC: ' + '{:.4f}'.format(val_auc_score))
             if i%10 == 0:
                 lo.write('Iteration: ' + str(i) + ', loss: ' +str(loss) + ', val AUC: ' +str(val_auc_score) + '\n')
             loss.backward()
