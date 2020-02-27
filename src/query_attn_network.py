@@ -273,11 +273,11 @@ def main():
     test_filepath = args['test_data_file']
     model_out = args['model_outfile']
     X, y = get_data(emb_dir, emb_prefix, emb_pids_file, train_filepath, emb_mode, emb_batch)
-    num_samples = X.shape[0]
+    
     X_val = X[:100, :]
-    y_val = y[:100, :]
+    y_val = y[:100]
     X_train = X[100:, :]
-    y_train = y[100:, :]
+    y_train = y[100:]
     if emb_dir_test == '':
         X_test, y_test = get_data(emb_dir, emb_prefix, test_emb_pids_file, test_filepath, 's')
     else:
