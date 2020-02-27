@@ -60,10 +60,10 @@ class Neural_Network(nn.Module):
         return num_features
 
     def predict(self, X_test):
-        print("Predicted data based on trained weights: ")
-        print("Input (scaled): \n" + str(X_test))
+        #print("Predicted data based on trained weights: ")
+        #print("Input (scaled): \n" + str(X_test))
         y_pred = self.forward(X_test)
-        print("Output: " + str(y_pred))
+        #print("Output: " + str(y_pred))
         return y_pred
 
 class Neural_Network_scale(nn.Module):
@@ -92,10 +92,10 @@ class Neural_Network_scale(nn.Module):
         return num_features
 
     def predict(self, X_test):
-        print("Predicted data based on trained weights: ")
-        print("Input (scaled): \n" + str(X_test))
+        #print("Predicted data based on trained weights: ")
+        #print("Input (scaled): \n" + str(X_test))
         y_pred = self.forward(X_test)
-        print("Output: " + str(y_pred))
+        #print("Output: " + str(y_pred))
         return y_pred
 
 class Neural_Network_siamese(nn.Module):
@@ -123,10 +123,10 @@ class Neural_Network_siamese(nn.Module):
         return num_features
 
     def predict(self, X_test):
-        print("Predicted data based on trained weights: ")
-        print("Input (scaled): \n" + str(X_test))
+        #print("Predicted data based on trained weights: ")
+        #print("Input (scaled): \n" + str(X_test))
         y_pred = self.forward(X_test)
-        print("Output: " + str(y_pred))
+        #print("Output: " + str(y_pred))
         return y_pred
 
 def write_query_attn_dataset_bert(bert_data, art_qrels, outfile, num_samples=1000, emb_paraids_available=None):
@@ -273,7 +273,7 @@ def main():
     test_filepath = args['test_data_file']
     model_out = args['model_outfile']
     X, y = get_data(emb_dir, emb_prefix, emb_pids_file, train_filepath, emb_mode, emb_batch)
-    
+
     X_val = X[:100, :]
     y_val = y[:100]
     X_train = X[100:, :]
@@ -313,6 +313,9 @@ def main():
     # NN.saveWeights(NN)
     y_pred = NN.predict(X_test).detach().numpy()
     auc_score = roc_auc_score(y_test, y_pred)
+    print("Predicted data based on trained weights: ")
+    print("Input (scaled): \n" + str(X_test))
+    print("Output: " + str(y_pred))
     print('AUC score: ' + str(auc_score))
     #print(NN.parameters())
     #print('True output: ' + str(y_test))
