@@ -4,6 +4,7 @@ import json
 from sentence_transformers import SentenceTransformer
 from src.sentbert_embed import SentbertParaEmbedding
 import torch
+from sklearn.preprocessing import minmax_scale
 
 
 def write_query_attn_dataset_bert(bert_data, art_qrels, outfile, num_samples=1000, emb_paraids_available=None):
@@ -105,4 +106,5 @@ def get_data(emb_dir, emb_file_prefix, emb_paraids_file, query_attn_data_file, e
                 continue
             X_train.append(np.hstack((qemb, p1emb, p2emb)))
             y_train.append(float(l.split('\t')[0]))
+    X_train = minmax_scale(X_train)
     return (torch.tensor(X_train), torch.tensor(y_train))
