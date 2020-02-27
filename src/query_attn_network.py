@@ -112,17 +112,14 @@ class Query_Attn_LL_Network(nn.Module):
         self.emb_size = 768
         self.cosine_sim = nn.CosineSimilarity()
         self.LL1 = nn.Linear(self.emb_size, self.emb_size)
-        self.LL2 = nn.Linear(self.emb_size, 96)
 
     def forward(self, X):
         self.Xq = X[:, :self.emb_size]
         self.Xp1 = X[:, self.emb_size:2*self.emb_size]
         self.Xp2 = X[:, 2*self.emb_size:]
         self.z = torch.relu(self.LL1(self.Xq))
-        self.zp1 = torch.relu(self.LL1(self.Xp1))
-        self.zp2 = torch.relu(self.LL1(self.Xp2))
-        self.sXp1 = torch.mul(self.zp1, self.z)
-        self.sXp2 = torch.mul(self.zp2, self.z)
+        self.sXp1 = torch.mul(self.Xp1, self.z)
+        self.sXp2 = torch.mul(self.Xp2, self.z)
         o = self.cosine_sim(self.sXp1, self.sXp2)  # final activation function
         return o
 
