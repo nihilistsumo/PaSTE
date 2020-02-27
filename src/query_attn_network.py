@@ -54,7 +54,7 @@ class Query_Attn_InteractMatrix_Network(nn.Module):
         self.p1l1 = torch.relu(self.LL1(self.qp1z))
         self.p2l1 = torch.relu(self.LL1(self.qp2z))
         self.p1l2 = torch.relu(self.LL2(self.p1l1))
-        self.p2l2 = torch.relu(self.LL2(self.p2l2))
+        self.p2l2 = torch.relu(self.LL2(self.p2l1))
         o = self.cosine_sim(self.p1l2, self.p2l2)
         return o
 
