@@ -110,8 +110,8 @@ class Neural_Network_siamese(nn.Module):
         self.Xq = X[:, :self.emb_size]
         self.Xp1 = X[:, self.emb_size:2 * self.emb_size]
         self.Xp2 = X[:, 2 * self.emb_size:]
-        self.z1 = torch.relu(self.LL1(self.Xp1))
-        self.z2 = torch.relu(self.LL1(self.Xp2))
+        self.z1 = torch.sigmoid(self.LL1(self.Xp1))
+        self.z2 = torch.sigmoid(self.LL1(self.Xp2))
         o = self.cosine_sim(self.z1, self.z2)  # final activation function
         return o
 
