@@ -11,28 +11,6 @@ import argparse
 import sys
 from sklearn.preprocessing import minmax_scale
 
-class Dummy_Similarity_Network():
-    def __init__(self, ):
-        # parameters
-        self.emb_size = 768
-        self.cosine_sim = nn.CosineSimilarity()
-
-    def forward(self, X):
-        self.Xq = X[:, :self.emb_size]
-        self.Xp1 = X[:, self.emb_size:2*self.emb_size]
-        self.Xp2 = X[:, 2*self.emb_size:]
-        print("Input (scaled): \n" + str(X))
-        o = self.cosine_sim(self.Xp1, self.Xp2)
-        print("Output: " + str(o))
-        return o
-
-    def num_flat_features(self, X):
-        size = X.size()[1:]  # all dimensions except the batch dimension
-        num_features = 1
-        for s in size:
-            num_features *= s
-        return num_features
-
 class Query_Attn_InteractMatrix_Network(nn.Module):
     def __init__(self, ):
         super(Query_Attn_InteractMatrix_Network, self).__init__()
