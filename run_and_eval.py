@@ -24,7 +24,7 @@ def main():
     # y_test = cosine_sim(X_testp1, X_testp2)
 
     parser = argparse.ArgumentParser(description='Train and evaluate query attentive network for paragraph similarity task')
-    parser.add_argument('-e', '--emb_dir', help='Path to para embedding directory')
+    parser.add_argument('-e', '--emb_dir', help='Path to para embedding directory for train split paras')
     parser.add_argument('-et', '--emb_dir_test', help='Path to para embedding directory for test split paras')
     parser.add_argument('-n', '--neural_model', help='Neural model variation (0/1/2)')
     parser.add_argument('-lr', '--learning_rate', help='Learning rate')
@@ -52,12 +52,13 @@ def main():
     test_filepath = args['test_data_file']
     model_out = args['model_outfile']
     log_out = model_out + '.train.log'
-    X, y = dat.get_data(emb_dir, emb_prefix, emb_pids_file, train_filepath, emb_mode, emb_batch)
+    if variation != 0:
+        X, y = dat.get_data(emb_dir, emb_prefix, emb_pids_file, train_filepath, emb_mode, emb_batch)
 
-    X_val = X[:100, :]
-    y_val = y[:100]
-    X_train = X[100:, :]
-    y_train = y[100:]
+        X_val = X[:100, :]
+        y_val = y[:100]
+        X_train = X[100:, :]
+        y_train = y[100:]
     if emb_dir_test == '':
         X_test, y_test = dat.get_data(emb_dir, emb_prefix, test_emb_pids_file, test_filepath, 's')
     else:

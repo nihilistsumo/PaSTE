@@ -18,11 +18,11 @@ class UtilTools():
                     page_para[page] = [para]
         return page_para
 
-    def compare_para_emb(self, p1, p2, ids, scaled_vecs):
+    def compare_para_emb(self, p1, p2, ids, scaled_vecs, xlim_down=0, xlim_up=780, ylim_down=0, ylim_up=1.0):
         fig, (ax1, ax2) = plt.subplots(2, 1)
         fig.subplots_adjust(hspace=0.5)
-        plt.xlim(0, 780)
-        plt.ylim(0, 1.0)
+        plt.xlim(xlim_down, xlim_up)
+        plt.ylim(ylim_down, ylim_up)
         v1 = scaled_vecs[ids.index(p1)]
         v2 = scaled_vecs[ids.index(p2)]
         ax1.plot(v1)
@@ -30,9 +30,9 @@ class UtilTools():
         ax2.plot(v1 - v2)
         plt.show()
 
-    def show_para_emb_in_page(self, paras, ids, scaled_vecs):
-        plt.xlim(0, 780)
-        plt.ylim(0, 1.0)
+    def show_para_emb_in_page(self, paras, ids, scaled_vecs, xlim_down=0, xlim_up=780, ylim_down=0, ylim_up=1.0):
+        plt.xlim(xlim_down, xlim_up)
+        plt.ylim(ylim_down, ylim_up)
         for p in paras:
             v = scaled_vecs[ids.index(p)]
             plt.plot(v)
