@@ -1,12 +1,8 @@
 import argparse
-from data import process_qry_attn_data as dat
-from src.query_attn_network import Dummy_Similarity_Network, Query_Attn_ExpandLL_Network, Query_Attn_LL_Network, \
-    Siamese_Network, Query_Attn_InteractMatrix_Network
+from data import process_pp_data as dat
+from src.unsupervised_parasim import Paravec_Cosine
 from sklearn.metrics import roc_auc_score
-import sys
-import torch
-import torch.nn as nn
-import torch.optim as optim
+import json
 
 def main():
     # X = torch.tensor(torch.randn(256, 12))
@@ -30,7 +26,7 @@ def main():
     parser.add_argument('-p', '--emb_paraids_file', help='Path to embedding paraids file')
     parser.add_argument('-em', '--emb_mode', help='Embedding mode: s=single embedding file, m=multi emb files in shards')
     parser.add_argument('-b', '--emb_batch_size', help='Batch size of each embedding file shard')
-    parser.add_argument('-d', '--data_file', help='Path to query attn data file')
+    parser.add_argument('-d', '--data_file', help='Path to parapair json data file')
     args = vars(parser.parse_args())
     emb_dir = args['emb_dir']
     variation = int(args['variation'])
@@ -39,3 +35,16 @@ def main():
     emb_mode = args['emb_mode']
     emb_batch = int(args['emb_batch_size'])
     data_filepath = args['data_file']
+    with open(data_filepath, 'r') as dt:
+        data = json.load(dt)
+    if variation == 1:
+        X, y = dat.get_data_unsup(emb_dir, emb_prefix, emb_pids_file, data, emb_mode, emb_batch)
+        Unsup = Paravec_Cosine()
+        y_pred = Unsup.forward(X)
+        auc_score = roc_auc_score(y, y_pred)
+        print('\n###\nThis AUC score is micro averaged. Hence it will give slightly different result when\ncompared to'
+              'macro-averaged AUC score (mean of AUC scores per page) obtained from SummerProjectEvaluation\n###\n')
+        print('AUC score: ' + str(auc_score))
+
+if __name__ == '__main__':
+    main()
