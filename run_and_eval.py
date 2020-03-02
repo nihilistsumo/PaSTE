@@ -78,6 +78,8 @@ def main():
         NN = Siamese_Network()
     elif variation == 4:
         NN = Query_Attn_InteractMatrix_Network()
+    elif variation == 5:
+        NN = Query_Attn_LL_dimred_Network()
     else:
         print('Wrong model variation selected!')
         exit(1)
