@@ -1,7 +1,7 @@
 import argparse
 from data import process_qry_attn_data as dat
-from src.query_attn_network import Dummy_Similarity_Network, Query_Attn_ExpandLL_Network, Query_Attn_LL_Network, \
-    Siamese_Network, Query_Attn_InteractMatrix_Network
+from src.query_attn_network import Query_Attn_ExpandLL_Network, Query_Attn_LL_Network, \
+    Siamese_Network, Query_Attn_InteractMatrix_Network, Query_Attn_LL_dimred_Network
 from sklearn.metrics import roc_auc_score
 import sys
 import torch
@@ -64,13 +64,7 @@ def main():
     else:
         X_test, y_test = dat.get_data(emb_dir_test, emb_prefix, test_emb_pids_file, test_filepath, 's')
 
-    if variation == 0:
-        NN = Dummy_Similarity_Network()
-        y_pred = NN.forward(X_test)
-        auc_score = roc_auc_score(y_test, y_pred)
-        print('AUC score: ' + str(auc_score))
-        sys.exit(0)
-    elif variation == 1:
+    if variation == 1:
         NN = Query_Attn_ExpandLL_Network()
     elif variation == 2:
         NN = Query_Attn_LL_Network()
