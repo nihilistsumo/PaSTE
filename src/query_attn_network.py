@@ -135,7 +135,9 @@ class Query_Attn_LL_dimred_Network(nn.Module):
         self.Xp1 = X[:, self.qry_emb_size:self.qry_emb_size+self.para_emb_size]
         self.Xp2 = X[:, self.qry_emb_size+self.para_emb_size:]
         self.outer1 = torch.einsum('bi, bj -> bij', (self.Xq, self.Xp1))
+        self.outer1 = torch.flatten(self.outer1, start_dim=1)
         self.outer2 = torch.einsum('bi, bj -> bij', (self.Xq, self.Xp2))
+        self.outer2 = torch.flatten(self.outer2, start_dim=1)
         self.z11 = torch.relu(self.LL1(self.outer1))
         self.z12 = torch.relu(self.LL1(self.outer2))
         self.o1 = torch.relu(self.out(self.z11))
