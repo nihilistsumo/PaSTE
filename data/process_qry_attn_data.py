@@ -106,7 +106,7 @@ def get_data(emb_dir, emb_file_prefix, emb_paraids_file, query_attn_data_file, e
             p2_list.append(l.split('\t')[3].rstrip())
             targets.append(float(l.split('\t')[0]))
     print("Using " + emb_file_prefix + " to embed query, should be same as the embedding file")
-    qemb_list = model.encode(queries)
+    qemb_list = model.encode(queries, show_progress_bar=True)
     for i in range(len(queries)):
         c = 0
         qemb = qemb_list[i]
