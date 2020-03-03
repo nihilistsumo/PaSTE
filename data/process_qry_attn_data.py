@@ -92,7 +92,7 @@ def get_data(emb_dir, emb_file_prefix, emb_paraids_file, query_attn_data_file, e
         return 1
 
     count = 0
-    for line in open(query_attn_data_file).xreadlines(): count += 1
+    for line in open(query_attn_data_file).readlines(): count += 1
     print('Reading ' + str(count) + ' samples in data file')
 
     with open(query_attn_data_file, 'r') as qd:
