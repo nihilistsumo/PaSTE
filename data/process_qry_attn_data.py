@@ -70,8 +70,8 @@ def write_query_attn_dataset_parapair(parapair_data, outfile):
 def get_data(emb_dir, emb_file_prefix, emb_paraids_file, query_attn_data_file, emb_mode, batch_size=10000):
     model = SentenceTransformer(emb_file_prefix)
     paraids = list(np.load(emb_paraids_file))
-    X_train = []
-    y_train = []
+    X= []
+    y= []
     if emb_mode == 's':
         para_emb = np.load(emb_dir + '/' + emb_file_prefix + '-part1.npy')
         para_emb_dict = dict()
@@ -105,8 +105,9 @@ def get_data(emb_dir, emb_file_prefix, emb_paraids_file, query_attn_data_file, e
             p1_list.append(l.split('\t')[2])
             p2_list.append(l.split('\t')[3].rstrip())
             targets.append(float(l.split('\t')[0]))
-    print("Using " + emb_file_prefix + " to embed query, should be same as the embedding file")
+    print('Using ' + emb_file_prefix + ' to embed query, should be same as the embedding file')
     qemb_list = model.encode(queries, show_progress_bar=True)
+    print('Queries embedded, now formatting the data into tensors')
     for i in range(len(queries)):
         c = 0
         qemb = qemb_list[i]
@@ -120,8 +121,8 @@ def get_data(emb_dir, emb_file_prefix, emb_paraids_file, query_attn_data_file, e
         if p1emb is None or p2emb is None:
             continue
 
-        X_train.append(np.hstack((qemb, p1emb, p2emb)))
-        y_train.append(targets[i])
+        X.append(np.hstack((qemb, p1emb, p2emb)))
+        y.append(targets[i])
         c += 1
         if c % 100 == 0:
             sys.stdout.write('\r' + str(c) + ' samples read')
@@ -146,4 +147,4 @@ def get_data(emb_dir, emb_file_prefix, emb_paraids_file, query_attn_data_file, e
     #         c += 1
     #         if c % 100 == 0:
     #             sys.stdout.write('\r' + str(c) + ' samples read')
-    return (torch.tensor(X_train), torch.tensor(y_train))
+    return (torch.tensor(X), torch.tensor(y))

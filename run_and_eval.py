@@ -37,6 +37,10 @@ def main():
     parser.add_argument('-b', '--emb_batch_size', help='Batch size of each embedding file shard')
     parser.add_argument('-d', '--train_data_file', help='Path to train data file')
     parser.add_argument('-t', '--test_data_file', help='Path to test data file')
+    parser.add_argument('-qd', '--query_dim', type=int, help='Dimension of query embedding to be reduced by Raunak et al')
+    parser.add_argument('-pd', '--para_dim', type=int, help='Dimension of para embedding to be reduced by Raunak et al')
+    parser.add_argument('-h1', '--hidden_layer_size', type=int, help='Hidden layer size of dimred NN')
+    parser.add_argument('-oe', '--out_emb', type=int, help='Output size of dimred NN')
     parser.add_argument('-o', '--model_outfile', help='Path to save the trained model')
     args = vars(parser.parse_args())
     emb_dir = args['emb_dir']
@@ -52,6 +56,11 @@ def main():
     train_filepath = args['train_data_file']
     test_filepath = args['test_data_file']
     model_out = args['model_outfile']
+    if args['query_dim'] != None:
+        qdim = int(args['query_dim'])
+        pdim = int(args['para_dim'])
+        h1 = int(args['hidden_layer_size'])
+        oemb = int(args['out_emb'])
     log_out = model_out + '.train.log'
     if variation != 0:
         X, y = dat.get_data(emb_dir, emb_prefix, emb_pids_file, train_filepath, emb_mode, emb_batch)
@@ -74,10 +83,15 @@ def main():
     elif variation == 4:
         NN = Query_Attn_InteractMatrix_Network()
     elif variation == 5:
-        NN = Query_Attn_LL_dimred_Network()
+        NN = Query_Attn_LL_Network()
         X_train = undat.Mu_etAl_PPA_qry_attn_data(X_train, NN.emb_size)
         X_val = undat.Mu_etAl_PPA_qry_attn_data(X_val, NN.emb_size)
         X_test = undat.Mu_etAl_PPA_qry_attn_data(X_test, NN.emb_size)
+    elif variation == 6:
+        NN = Query_Attn_LL_dimred_Network(qdim, pdim, h1, oemb)
+        X_train = undat.Raunak_etAl_dimred_qry_attn_data(X_train, NN.emb_size, qdim, pdim)
+        X_val = undat.Raunak_etAl_dimred_qry_attn_data(X_val, NN.emb_size, qdim, pdim)
+        X_test = undat.Raunak_etAl_dimred_qry_attn_data(X_test, NN.emb_size, qdim, pdim)
     else:
         print('Wrong model variation selected!')
         exit(1)

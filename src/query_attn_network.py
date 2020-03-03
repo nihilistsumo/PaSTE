@@ -118,21 +118,29 @@ class Query_Attn_LL_Network(nn.Module):
         return y_pred
 
 class Query_Attn_LL_dimred_Network(nn.Module):
-    def __init__(self, ):
+    def __init__(self, qd, pd, h1, o):
         super(Query_Attn_LL_dimred_Network, self).__init__()
         # parameters
         self.emb_size = 768
+        self.qry_emb_size = qd
+        self.para_emb_size = pd
+        self.h1_size = h1
+        self.out_emb_size = o
         self.cosine_sim = nn.CosineSimilarity()
-        self.LL1 = nn.Linear(self.emb_size, self.emb_size)
+        self.LL1 = nn.Linear(self.qry_emb_size * self.para_emb_size, self.h1_size)
+        self.out = nn.Linear(self.h1_size, self.out_emb_size)
 
     def forward(self, X):
-        self.Xq = X[:, :self.emb_size]
-        self.Xp1 = X[:, self.emb_size:2*self.emb_size]
-        self.Xp2 = X[:, 2*self.emb_size:]
-        self.z = torch.relu(self.LL1(self.Xq))
-        self.sXp1 = torch.mul(self.Xp1, self.z)
-        self.sXp2 = torch.mul(self.Xp2, self.z)
-        o = self.cosine_sim(self.sXp1, self.sXp2)  # final activation function
+        self.Xq = X[:, :self.qry_emb_size]
+        self.Xp1 = X[:, self.qry_emb_size:self.qry_emb_size+self.para_emb_size]
+        self.Xp2 = X[:, self.qry_emb_size+self.para_emb_size:]
+        self.outer1 = torch.einsum('bi, bj -> bij', (self.Xq, self.Xp1))
+        self.outer2 = torch.einsum('bi, bj -> bij', (self.Xq, self.Xp2))
+        self.z11 = torch.relu(self.LL1(self.outer1))
+        self.z12 = torch.relu(self.LL1(self.outer2))
+        self.o1 = torch.relu(self.out(self.z11))
+        self.o2 = torch.relu(self.out(self.z12))
+        o = self.cosine_sim(self.o1, self.o2)  # final activation function
         return o
 
     def num_flat_features(self, X):
