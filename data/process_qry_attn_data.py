@@ -4,6 +4,7 @@ import json
 from sentence_transformers import SentenceTransformer
 from src.sentbert_embed import SentbertParaEmbedding
 import torch
+import sys
 from sklearn.preprocessing import minmax_scale
 
 
@@ -90,7 +91,12 @@ def get_data(emb_dir, emb_file_prefix, emb_paraids_file, query_attn_data_file, e
         print('Embedding mode not supported')
         return 1
 
+    count = 0
+    for line in open(query_attn_data_file).xreadlines(): count += 1
+    print('Reading ' + str(count) + ' samples in data file')
+
     with open(query_attn_data_file, 'r') as qd:
+        c = 0
         for l in qd:
             qemb = model.encode([l.split('\t')[1]])[0]
             p1 = l.split('\t')[2]
@@ -106,4 +112,7 @@ def get_data(emb_dir, emb_file_prefix, emb_paraids_file, query_attn_data_file, e
                 continue
             X_train.append(np.hstack((qemb, p1emb, p2emb)))
             y_train.append(float(l.split('\t')[0]))
+            c += 1
+            if c % 100 == 0:
+                sys.stdout.write('\r' + str(c) + ' samples read')
     return (torch.tensor(X_train), torch.tensor(y_train))
