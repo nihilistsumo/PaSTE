@@ -21,6 +21,40 @@ def Mu_etAl_PPA(X):
     z = np.hstack((z[:sample_size, :], z[sample_size:, :]))
     return torch.tensor(z)
 
+def Mu_etAl_PPA_qry_attn_data(X, emb_size):
+    X = X.numpy()
+    sample_size = X.shape[0]
+    Xq = X[:, :emb_size]
+    Xp = np.vstack((X[:, emb_size:2*emb_size], X[:, 2*emb_size:]))
+    print('Applying PPA by Mu et al.')
+    pca = PCA()
+    Xq = Xq - np.mean(Xq)
+    Xq_fit = pca.fit_transform(Xq)
+    Uq1 = pca.components_
+    zq = []
+    # Removing Projections on Top Components
+    for i, x in enumerate(Xq):
+        for u in Uq1[0:7]:
+            x = x - np.dot(u.transpose(), x) * u
+        zq.append(x)
+    zq = np.array(zq)
+
+    pca = PCA()
+    Xp = Xp - np.mean(Xp)
+    Xp_fit = pca.fit_transform(Xp)
+    Up1 = pca.components_
+    zp = []
+    # Removing Projections on Top Components
+    for i, x in enumerate(Xp):
+        for u in Up1[0:7]:
+            x = x - np.dot(u.transpose(), x) * u
+        zp.append(x)
+    zp = np.array(zp)
+
+    zp = np.hstack((zp[:sample_size, :], zp[sample_size:, :]))
+    z = np.hstack((zq, zp))
+    return torch.tensor(z)
+
 def Raunak_etAl_dimred(X, d):
     print('Applying dim reduction algo by Raunak et al.')
     X = Mu_etAl_PPA(X).numpy()

@@ -12,25 +12,6 @@ import argparse
 import sys
 from sklearn.preprocessing import minmax_scale
 
-def Mu_etAl_PPA(X):
-    X = X.numpy()
-    #sample_size = X.shape[0]
-    #X = np.vstack((X[:, :768], X[:, 768:]))
-    print('Applying PPA by Mu et al.')
-    pca = PCA()
-    X = X - np.mean(X)
-    X_fit = pca.fit_transform(X)
-    U1 = pca.components_
-    z = []
-    # Removing Projections on Top Components
-    for i, x in enumerate(X):
-        for u in U1[0:7]:
-            x = x - np.dot(u.transpose(), x) * u
-        z.append(x)
-    z = np.array(z)
-    #z = np.hstack((z[:sample_size, :], z[sample_size:, :]))
-    return torch.tensor(z)
-
 class Query_Attn_InteractMatrix_Network(nn.Module):
     def __init__(self, ):
         super(Query_Attn_InteractMatrix_Network, self).__init__()
@@ -145,9 +126,9 @@ class Query_Attn_LL_dimred_Network(nn.Module):
         self.LL1 = nn.Linear(self.emb_size, self.emb_size)
 
     def forward(self, X):
-        self.Xq = Mu_etAl_PPA(X[:, :self.emb_size])
-        self.Xp1 = Mu_etAl_PPA(X[:, self.emb_size:2*self.emb_size])
-        self.Xp2 = Mu_etAl_PPA(X[:, 2*self.emb_size:])
+        self.Xq = X[:, :self.emb_size]
+        self.Xp1 = X[:, self.emb_size:2*self.emb_size]
+        self.Xp2 = X[:, 2*self.emb_size:]
         self.z = torch.relu(self.LL1(self.Xq))
         self.sXp1 = torch.mul(self.Xp1, self.z)
         self.sXp2 = torch.mul(self.Xp2, self.z)

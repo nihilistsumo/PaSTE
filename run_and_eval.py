@@ -1,5 +1,6 @@
 import argparse
 from data import process_qry_attn_data as dat
+from data import unsup_data_process as undat
 from src.query_attn_network import Query_Attn_ExpandLL_Network, Query_Attn_LL_Network, \
     Siamese_Network, Query_Attn_InteractMatrix_Network, Query_Attn_LL_dimred_Network
 from sklearn.metrics import roc_auc_score
@@ -74,6 +75,9 @@ def main():
         NN = Query_Attn_InteractMatrix_Network()
     elif variation == 5:
         NN = Query_Attn_LL_dimred_Network()
+        X_train = undat.Mu_etAl_PPA_qry_attn_data(X_train, NN.emb_size)
+        X_val = undat.Mu_etAl_PPA_qry_attn_data(X_val, NN.emb_size)
+        X_test = undat.Mu_etAl_PPA_qry_attn_data(X_test, NN.emb_size)
     else:
         print('Wrong model variation selected!')
         exit(1)
