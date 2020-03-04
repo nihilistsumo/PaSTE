@@ -111,7 +111,7 @@ def main():
             opt.zero_grad()
             output = NN(X_train)
             loss = criterion(output, y_train)
-            y_val_pred = NN.predict(X_val).detach().numpy()
+            y_val_pred = NN.predict(X_val).detach().cpu().numpy()
             val_auc_score = roc_auc_score(y_val, y_val_pred)
             sys.stdout.write('\r' + 'Iteration: ' + str(i) + ', loss: ' +str(loss) + ', val AUC: ' + '{:.4f}'.format(val_auc_score))
             if i%10 == 0:
