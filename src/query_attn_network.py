@@ -105,6 +105,7 @@ class Query_Attn_LL_Network(nn.Module):
         self.sXp = torch.cat((self.sXp1, self.sXp2), dim=1)
         #o = self.cosine_sim(self.sXp1, self.sXp2)  # final activation function
         o = self.LL2(self.sXp)
+        o = o.reshape(-1)
         return o
 
     def num_flat_features(self, X):
