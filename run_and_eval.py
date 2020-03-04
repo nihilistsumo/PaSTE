@@ -70,6 +70,8 @@ def main():
     log_out = model_out + '.train.log'
     if variation != 0:
         X, y = dat.get_data(emb_dir, emb_prefix, emb_pids_file, train_filepath, emb_mode, emb_batch)
+        X.to(device1)
+        y.to(device1)
 
         X_val = X[:100, :]
         y_val = y[:100]
