@@ -71,14 +71,16 @@ def main():
     if variation != 0:
         X, y = dat.get_data(emb_dir, emb_prefix, emb_pids_file, train_filepath, emb_mode, emb_batch)
 
-        X_val = X[:100, :]
-        y_val = y[:100]
-        X_train = X[100:, :]
+        X_val = X[:100, :].cuda(device1)
+        y_val = y[:100].cuda(device1)
+        X_train = X[100:, :].cuda(device1)
         y_train = y[100:].cuda(device1)
     if emb_dir_test == '':
         X_test, y_test = dat.get_data(emb_dir, emb_prefix, test_emb_pids_file, test_filepath, 's')
     else:
         X_test, y_test = dat.get_data(emb_dir_test, emb_prefix, test_emb_pids_file, test_filepath, 's')
+    X_test = X_test.cuda(device1)
+    y_test = y_test.cuda(device1)
 
     if variation == 1:
         NN = Query_Attn_ExpandLL_Network().to(device1)
@@ -95,9 +97,9 @@ def main():
         X_test = undat.Mu_etAl_PPA_qry_attn_data(X_test, NN.emb_size)
     elif variation == 6:
         NN = Query_Attn_LL_dimred_Network(qdim, pdim, h1, oemb).to(device1)
-        X_train = undat.Raunak_etAl_dimred_qry_attn_data(X_train, NN.emb_size, qdim, pdim).cuda(device1)
-        X_val = undat.Raunak_etAl_dimred_qry_attn_data(X_val, NN.emb_size, qdim, pdim).cuda(device1)
-        X_test = undat.Raunak_etAl_dimred_qry_attn_data(X_test, NN.emb_size, qdim, pdim).cuda(device1)
+        X_train = undat.Raunak_etAl_dimred_qry_attn_data(X_train, NN.emb_size, qdim, pdim)
+        X_val = undat.Raunak_etAl_dimred_qry_attn_data(X_val, NN.emb_size, qdim, pdim)
+        X_test = undat.Raunak_etAl_dimred_qry_attn_data(X_test, NN.emb_size, qdim, pdim)
     else:
         print('Wrong model variation selected!')
         exit(1)
