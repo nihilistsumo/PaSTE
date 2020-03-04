@@ -107,6 +107,9 @@ def get_data(emb_dir, emb_file_prefix, emb_paraids_file, query_attn_data_file, e
             targets.append(float(l.split('\t')[0]))
     print('Using ' + emb_file_prefix + ' to embed query, should be same as the embedding file')
     qemb_list = model.encode(queries, show_progress_bar=True)
+    fqemb_list = []
+    p1emb_list = []
+    p2emb_list = []
     print('Queries embedded, now formatting the data into tensors')
     for i in range(len(queries)):
         c = 0
@@ -120,12 +123,15 @@ def get_data(emb_dir, emb_file_prefix, emb_paraids_file, query_attn_data_file, e
 
         if p1emb is None or p2emb is None:
             continue
-
-        X.append(np.hstack((qemb, p1emb, p2emb)))
+        fqemb_list.append(qemb)
+        p1emb_list.append(p1emb)
+        p2emb_list.append(p2emb)
         y.append(targets[i])
         c += 1
         if c % 100 == 0:
             sys.stdout.write('\r' + str(c) + ' samples read')
+    X = np.hstack((fqemb_list, p1emb_list, p2emb_list))
+
 
     # with open(query_attn_data_file, 'r') as qd:
     #     c = 0
