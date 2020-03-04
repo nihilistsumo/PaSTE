@@ -127,8 +127,8 @@ class Query_Attn_LL_dimred_Network(nn.Module):
         self.h1_size = h1
         self.out_emb_size = o
         self.cosine_sim = nn.CosineSimilarity()
-        self.LL1 = nn.Linear(self.qry_emb_size * self.para_emb_size, self.h1_size)
-        self.out = nn.Linear(self.h1_size, self.out_emb_size)
+        self.LL1 = nn.Linear(self.qry_emb_size * self.para_emb_size, self.h1_size).cuda()
+        self.out = nn.Linear(self.h1_size, self.out_emb_size).cuda()
 
     def forward(self, X):
         self.Xq = X[:, :self.qry_emb_size]
