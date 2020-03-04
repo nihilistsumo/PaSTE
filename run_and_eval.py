@@ -95,9 +95,9 @@ def main():
         X_test = undat.Mu_etAl_PPA_qry_attn_data(X_test, NN.emb_size)
     elif variation == 6:
         NN = Query_Attn_LL_dimred_Network(qdim, pdim, h1, oemb).to(device1)
-        X_train = undat.Raunak_etAl_dimred_qry_attn_data(X_train, NN.emb_size, qdim, pdim)
-        X_val = undat.Raunak_etAl_dimred_qry_attn_data(X_val, NN.emb_size, qdim, pdim)
-        X_test = undat.Raunak_etAl_dimred_qry_attn_data(X_test, NN.emb_size, qdim, pdim)
+        X_train = undat.Raunak_etAl_dimred_qry_attn_data(X_train, NN.emb_size, qdim, pdim).cuda(device1)
+        X_val = undat.Raunak_etAl_dimred_qry_attn_data(X_val, NN.emb_size, qdim, pdim).cuda(device1)
+        X_test = undat.Raunak_etAl_dimred_qry_attn_data(X_test, NN.emb_size, qdim, pdim).cuda(device1)
     else:
         print('Wrong model variation selected!')
         exit(1)
