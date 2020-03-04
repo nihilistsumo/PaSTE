@@ -92,6 +92,7 @@ class Query_Attn_LL_Network(nn.Module):
         self.emb_size = 768
         self.cosine_sim = nn.CosineSimilarity()
         self.LL1 = nn.Linear(self.emb_size, self.emb_size).cuda()
+        self.LL2 = nn.Linear(2*self.emb_size, 1).cuda()
         self.dropout = nn.Dropout(p=0.1)
 
     def forward(self, X):
@@ -101,7 +102,9 @@ class Query_Attn_LL_Network(nn.Module):
         self.z = torch.relu(self.LL1(self.dropout(self.Xq)))
         self.sXp1 = torch.mul(self.Xp1, self.z)
         self.sXp2 = torch.mul(self.Xp2, self.z)
-        o = self.cosine_sim(self.sXp1, self.sXp2)  # final activation function
+        self.sXp = torch.cat((self.sXp1, self.sXp2), dim=1)
+        #o = self.cosine_sim(self.sXp1, self.sXp2)  # final activation function
+        o = self.LL2(self.sXp)
         return o
 
     def num_flat_features(self, X):
