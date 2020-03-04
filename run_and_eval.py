@@ -72,7 +72,7 @@ def main():
         X, y = dat.get_data(emb_dir, emb_prefix, emb_pids_file, train_filepath, emb_mode, emb_batch)
 
         X_val = X[:100, :].cuda(device1)
-        y_val = y[:100].cuda(device1)
+        y_val = y[:100]
         X_train = X[100:, :].cuda(device1)
         y_train = y[100:].cuda(device1)
     if emb_dir_test == '':
@@ -80,7 +80,6 @@ def main():
     else:
         X_test, y_test = dat.get_data(emb_dir_test, emb_prefix, test_emb_pids_file, test_filepath, 's')
     X_test = X_test.cuda(device1)
-    y_test = y_test.cuda(device1)
 
     if variation == 1:
         NN = Query_Attn_ExpandLL_Network().to(device1)
@@ -109,7 +108,7 @@ def main():
     opt = optim.SGD(NN.parameters(), lr=lrate)
     print()
     with open(log_out, 'w') as lo:
-        for i in range(iter):  # trains the NN 1,000 times
+        for i in range(iter):
             opt.zero_grad()
             output = NN(X_train)
             loss = criterion(output, y_train)
