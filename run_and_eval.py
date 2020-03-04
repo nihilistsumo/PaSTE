@@ -56,6 +56,12 @@ def main():
     train_filepath = args['train_data_file']
     test_filepath = args['test_data_file']
     model_out = args['model_outfile']
+    if torch.cuda.is_available():
+        device1 = torch.device('cuda:0')
+        device2 = torch.device('cuda:1')
+    else:
+        device1 = torch.device('cpu')
+        device2 = device1
     if args['query_dim'] != None:
         qdim = int(args['query_dim'])
         pdim = int(args['para_dim'])
@@ -75,20 +81,20 @@ def main():
         X_test, y_test = dat.get_data(emb_dir_test, emb_prefix, test_emb_pids_file, test_filepath, 's')
 
     if variation == 1:
-        NN = Query_Attn_ExpandLL_Network()
+        NN = Query_Attn_ExpandLL_Network().to(device1)
     elif variation == 2:
-        NN = Query_Attn_LL_Network()
+        NN = Query_Attn_LL_Network().to(device1)
     elif variation == 3:
-        NN = Siamese_Network()
+        NN = Siamese_Network().to(device1)
     elif variation == 4:
-        NN = Query_Attn_InteractMatrix_Network()
+        NN = Query_Attn_InteractMatrix_Network().to(device1)
     elif variation == 5:
-        NN = Query_Attn_LL_Network()
+        NN = Query_Attn_LL_Network().to(device1)
         X_train = undat.Mu_etAl_PPA_qry_attn_data(X_train, NN.emb_size)
         X_val = undat.Mu_etAl_PPA_qry_attn_data(X_val, NN.emb_size)
         X_test = undat.Mu_etAl_PPA_qry_attn_data(X_test, NN.emb_size)
     elif variation == 6:
-        NN = Query_Attn_LL_dimred_Network(qdim, pdim, h1, oemb)
+        NN = Query_Attn_LL_dimred_Network(qdim, pdim, h1, oemb).to(device1)
         X_train = undat.Raunak_etAl_dimred_qry_attn_data(X_train, NN.emb_size, qdim, pdim)
         X_val = undat.Raunak_etAl_dimred_qry_attn_data(X_val, NN.emb_size, qdim, pdim)
         X_test = undat.Raunak_etAl_dimred_qry_attn_data(X_test, NN.emb_size, qdim, pdim)
