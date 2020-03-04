@@ -70,13 +70,11 @@ def main():
     log_out = model_out + '.train.log'
     if variation != 0:
         X, y = dat.get_data(emb_dir, emb_prefix, emb_pids_file, train_filepath, emb_mode, emb_batch)
-        X.to(device1)
-        y.to(device1)
 
         X_val = X[:100, :]
         y_val = y[:100]
         X_train = X[100:, :]
-        y_train = y[100:]
+        y_train = y[100:].cuda(device1)
     if emb_dir_test == '':
         X_test, y_test = dat.get_data(emb_dir, emb_prefix, test_emb_pids_file, test_filepath, 's')
     else:
