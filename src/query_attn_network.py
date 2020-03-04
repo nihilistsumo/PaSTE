@@ -91,7 +91,7 @@ class Query_Attn_LL_Network(nn.Module):
         # parameters
         self.emb_size = 768
         self.cosine_sim = nn.CosineSimilarity()
-        self.LL1 = nn.Linear(self.emb_size, self.emb_size)
+        self.LL1 = nn.Linear(self.emb_size, self.emb_size).cuda()
         self.dropout = nn.Dropout(p=0.1)
 
     def forward(self, X):
