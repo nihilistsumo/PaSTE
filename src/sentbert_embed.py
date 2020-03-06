@@ -2,6 +2,7 @@ from sentence_transformers import SentenceTransformer
 import argparse
 import numpy as np
 import spacy
+import sys
 
 class SentbertParaEmbedding():
     def __init__(self, paraid_file, embed_dir, embed_file_prefix, batch_size):
@@ -57,7 +58,12 @@ def get_embeddings(paratext_file, model_name, outdir, saveid=False, batch_size=1
         ids = []
         for l in pt:
             ids.append(l.split('\t')[0])
-            texts.append(l.split('\t')[1])
+            if(len(l.split('\t')) < 2):
+                texts.append(" ")
+                print(l.split('\t')[0] + 'No text found, appending space')
+                sys.exit(0)
+            else:
+                texts.append(l.split('\t')[1])
             c += 1
             if c % batch_size == 0:
                 print("Going to embed")
