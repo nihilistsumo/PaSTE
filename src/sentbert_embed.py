@@ -6,16 +6,21 @@ import sys
 
 class SentbertParaEmbedding():
     def __init__(self, paraid_file, embed_dir, embed_file_prefix, batch_size):
+        self.para_info = None
         self.paraids = list(np.load(paraid_file))
+        if('\t' in self.paraids[0]):
+            self.para_info = self.paraids
+            self.paraids = [p.split('\t')[0] for p in self.paraids]
         self.emb_dir = embed_dir
         self.prefix = embed_file_prefix
         self.batch_size = batch_size
         self.curr_para_emb = None
+        self.part = -1
 
     def get_embeddings_as_dict(self, paraid_list):
         print('Going to retrieve embeddings for ' + str(len(paraid_list)) + ' paras')
         emb_dict = dict()
-        part = -1
+        #part = -1
         for p in paraid_list:
             if p in self.paraids:
                 p_index = self.paraids.index(p)
@@ -24,15 +29,16 @@ class SentbertParaEmbedding():
                 continue
             curr_part = p_index // self.batch_size + 1
             offset = p_index % self.batch_size
-            if curr_part == part:
-                emb_dict[p] = self.curr_part_emb[offset]
+            if curr_part == self.part:
+                emb_dict[p] = self.curr_para_emb[offset]
             else:
-                self.curr_part_emb = np.load(self.emb_dir + '/' + self.prefix + '-part' + str(curr_part) + '.npy')
-                emb_dict[p] = self.curr_part_emb[offset]
+                self.curr_para_emb = np.load(self.emb_dir + '/' + self.prefix + '-part' + str(curr_part) + '.npy')
+                emb_dict[p] = self.curr_para_emb[offset]
+                self.part = curr_part
         return emb_dict
 
     def get_single_embedding(self, paraid):
-        part = -1
+        #part = -1
         if paraid in self.paraids:
             p_index = self.paraids.index(paraid)
         else:
@@ -40,11 +46,34 @@ class SentbertParaEmbedding():
             return None
         curr_part = p_index // self.batch_size + 1
         offset = p_index % self.batch_size
-        if curr_part == part:
-            emb_vec = self.curr_part_emb[offset]
+        if curr_part == self.part:
+            emb_vec = self.curr_para_emb[offset]
         else:
-            self.curr_part_emb = np.load(self.emb_dir + '/' + self.prefix + '-part' + str(curr_part) + '.npy')
-            emb_vec = self.curr_part_emb[offset]
+            self.curr_para_emb = np.load(self.emb_dir + '/' + self.prefix + '-part' + str(curr_part) + '.npy')
+            emb_vec = self.curr_para_emb[offset]
+            self.part = curr_part
+        return emb_vec
+
+    def get_single_sent_embedding(self, paraid):
+        if paraid in self.paraids:
+            p_index = self.paraids.index(paraid)
+            p_part = int(self.para_info[p_index].split('\t')[1])
+            p_offset = int(self.para_info[p_index].split('\t')[2])
+            p_len = int(self.para_info[p_index].split('\t')[3])
+        else:
+            print(paraid + ' not found in embedding dir')
+            return None
+        curr_part = p_part
+        if curr_part == self.part:
+            emb_vec = []
+            for i in range(p_len):
+                emb_vec.append(self.curr_para_emb[p_offset + i])
+        else:
+            self.curr_para_emb = np.load(self.emb_dir + '/' + self.prefix + '-part' + str(curr_part) + '.npy')
+            emb_vec = []
+            for i in range(p_len):
+                emb_vec.append(self.curr_para_emb[p_offset + i])
+            self.part = curr_part
         return emb_vec
 
 # get embeddings of the whole para
