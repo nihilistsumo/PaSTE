@@ -84,29 +84,36 @@ def get_sentence_wise_embeddings(paratext_file, model_name, outdir, saveid=False
     with open(paratext_file, 'r') as pt:
         c = 0
         part = 0
+        offset = 0
         texts = []
         ids = []
         for l in pt:
             paraid = l.split('\t')[0]
             text = l.split('\t')[1]
             text_sents = [str(s) for s in nlp(text).sents]
+            text_len = len(text_sents)
             #text_sents = text.split('.')
-            for i in range(len(text_sents)):
-                ids.append(paraid+'_'+str(i+1))
+            # ID part-no offset length
+            ids.append(paraid + '\t' + str(part + 1) + '\t' + str(offset) + '\t' + str(text_len))
+            #for i in range(len(text_sents)):
+            #    ids.append(paraid+'_'+str(i+1))
             texts += text_sents
             c += 1
+            offset += text_len
             if c % batch_size == 0:
                 print("Going to embed")
                 embeds = model.encode(texts)
                 part += 1
+                offset = 0
                 print("Embedding complete, going to save part " + str(part) + ", " + str(c) + " paras embedded\n")
                 np.save(outdir + '/' + model_name + '-part' + str(part), embeds)
                 texts = []
-        print("Going to embed")
-        embeds = model.encode(texts)
-        part += 1
-        print("Embedding complete, going to save part " + str(part) + ", " + str(c) + " paras embedded\n")
-        np.save(outdir + '/' + model_name + '-part' + str(part), embeds)
+        if len(texts) > 0:
+            print("Going to embed")
+            embeds = model.encode(texts)
+            part += 1
+            print("Embedding complete, going to save part " + str(part) + ", " + str(c) + " paras embedded\n")
+            np.save(outdir + '/' + model_name + '-part' + str(part), embeds)
         if saveid:
             print("Saving paraids file")
             ids = np.array(ids)
