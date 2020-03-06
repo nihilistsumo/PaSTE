@@ -60,7 +60,7 @@ def get_embeddings(paratext_file, model_name, outdir, saveid=False, batch_size=1
             ids.append(l.split('\t')[0])
             if(len(l.split('\t')) < 2):
                 texts.append(" ")
-                print(l.split('\t')[0] + 'No text found, appending space')
+                print(l + 'No text found, appending space')
                 sys.exit(0)
             else:
                 texts.append(l.split('\t')[1])
