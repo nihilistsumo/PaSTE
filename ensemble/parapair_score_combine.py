@@ -33,10 +33,12 @@ def normalize_parapair_scores(parapair_score_dict):
         parapair_score_dict[pp] /= max_score
     return parapair_score_dict
 
-def load_and_normalize_parapair_scores(score_filedir, norm):
+def load_and_normalize_parapair_scores(score_files, norm):
     score_dict = dict()
-    for fname in os.listdir(score_filedir):
-        with open(score_filedir+"/"+fname, 'r') as sf:
+    #for fname in os.listdir(score_filedir):
+    for sf in score_files:
+        fname = sf.split('/')[len(sf.split('/')) - 1]
+        with open(sf, 'r') as sf:
             if norm == 'z':
                 score_dict[fname] = zscore_normalize_parapair_scores(json.load(sf))
             else:
@@ -92,18 +94,20 @@ def train_model(Xtrain, ytrain, fet_list):
 def main():
     parser = argparse.ArgumentParser(description="Train a model to combine parapair scores")
     parser.add_argument("-pp", "--parapair_file", required=True, help="Path to train parapair file")
-    parser.add_argument("-pps", "--parapair_score_dir", required=True, help="Path to directory containing parapair scores to be combined")
+    #parser.add_argument("-pps", "--parapair_score_dir", required=True, help="Path to directory containing parapair scores to be combined")
+    parser.add_argument("-pps", "--parapair_score_files", required=True, nargs='+',
+                        help="Paths to parapair score files as list")
     parser.add_argument("-n", "--normalization", required=True,
                         help="Normalization method to be used (n = scale values between [0,1] / z = z-score normalization")
     parser.add_argument("-o", "--model_out", required=True, help="Path to output")
     args = vars(parser.parse_args())
     parapair_file = args["parapair_file"]
-    parapair_score_dir = args["parapair_score_dir"]
+    parapair_score_list = args["parapair_score_dir"]
     norm = args["normalization"]
     outpath = args["model_out"]
 
     parapairs_dict = load_parapairs(parapair_file)
-    parapair_scores = load_and_normalize_parapair_scores(parapair_score_dir, norm)
+    parapair_scores = load_and_normalize_parapair_scores(parapair_score_list, norm)
     Xtrain, ytrain, fet_list = prepare_train_data(parapair_scores, parapairs_dict)
     # Xtrain = stats.zscore(Xtrain, axis=0)
     print(Xtrain[10:])

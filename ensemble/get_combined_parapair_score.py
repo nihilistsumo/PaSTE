@@ -57,7 +57,7 @@ def predict_scores(score_dict, model_dict):
                 score += score_dict[fet][rev(pp)] * model_dict[fet]
         combined_scores[pp] = score
         count += 1
-        if count % 10000:
+        if count % 10000 == 0:
             print(".")
     min_score = min(combined_scores.values())
     print("Min score: {}".format(min_score))
