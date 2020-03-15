@@ -33,10 +33,12 @@ def zscore_normalize_parapair_scores(parapair_score_dict):
         parapair_score_dict[pp] = (parapair_score_dict[pp] - mu) / sigma
     return parapair_score_dict
 
-def load_and_normalize_parapair_scores(score_filedir, norm):
+def load_and_normalize_parapair_scores(score_files, norm):
     score_dict = dict()
-    for fname in os.listdir(score_filedir):
-        with open(score_filedir+"/"+fname, 'r') as sf:
+    #for fname in os.listdir(score_filedir):
+    for sf in score_files:
+        fname = sf.split('/')[len(sf.split('/')) - 1]
+        with open(sf, 'r') as sf:
             if norm == 'z':
                 score_dict[fname] = zscore_normalize_parapair_scores(json.load(sf))
             else:
@@ -67,19 +69,19 @@ def predict_scores(score_dict, model_dict):
 
 def main():
     parser = argparse.ArgumentParser(description="Get combined parapair score using pre-trained model file")
-    parser.add_argument("-pps", "--parapair_score_dir", required=True,
-                        help="Path to directory containing parapair scores to be combined")
+    parser.add_argument("-pps", "--parapair_score_files", required=True, nargs='+',
+                        help="Paths to parapair score files to be combined")
     parser.add_argument("-m", "--model", required=True, help="Path to model file")
     parser.add_argument("-n", "--normalization", required=True,
                         help="Normalization method to be used (n = scale values between [0,1] / z = z-score normalization")
     parser.add_argument("-o", "--out", required=True, help="Path to output parapair score file")
     args = vars(parser.parse_args())
-    parapair_score_dir = args["parapair_score_dir"]
+    parapair_score_files = args["parapair_score_files"]
     model_file = args["model"]
     norm = args["normalization"]
     out_file = args["out"]
 
-    parapair_scores = load_and_normalize_parapair_scores(parapair_score_dir, norm)
+    parapair_scores = load_and_normalize_parapair_scores(parapair_score_files, norm)
     with open(model_file, 'r') as m:
         model = json.load(m)
     combined_score_dict = predict_scores(parapair_scores, model)
