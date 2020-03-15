@@ -102,7 +102,7 @@ def main():
     parser.add_argument("-o", "--model_out", required=True, help="Path to output")
     args = vars(parser.parse_args())
     parapair_file = args["parapair_file"]
-    parapair_score_list = args["parapair_score_dir"]
+    parapair_score_list = args["parapair_score_files"]
     norm = args["normalization"]
     outpath = args["model_out"]
 
