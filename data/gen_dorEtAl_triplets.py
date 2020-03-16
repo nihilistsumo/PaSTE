@@ -10,6 +10,7 @@ def generate_triples(page_para_dict, pagewise_hier_qrels, pagewise_top_qrels):
     common_pages = page_para_pages.intersection(top_pages.intersection(hier_pages))
     page_num = len(common_pages)
     print('Triples to be generated from ' + str(page_num) + ' pages')
+    discard = False
     for page in common_pages:
         paras_in_page = page_para_dict[page]
         top_qrels_reversed = get_reversed_top_qrels(pagewise_top_qrels[page])
@@ -25,26 +26,25 @@ def generate_triples(page_para_dict, pagewise_hier_qrels, pagewise_top_qrels):
                             p1 = simparas[i]
                             p2 = simparas[j]
                             neg_paras = [p for p in paras_in_page if p not in simparas]
-                            if len(neg_paras) == 0:
-                                continue
-                            elif len(neg_paras) == 1:
-                                p3 = neg_paras[0]
-                            else:
-                                p3 = random.sample(neg_paras, 1)[0]
+                            p3 = random.sample(neg_paras, 1)[0]
                             loop = 0
                             while top_qrels_reversed[p3] == top_qrels_reversed[p1]:
                                 p3 = random.sample(neg_paras, 1)[0]
                                 loop += 1
                                 if loop % 5000 == 0:
-                                    print(loop)
+                                    print('Skipping...')
                                     print(paras_in_page)
                                     print(simparas)
                                     for p in paras_in_page:
                                         print(p+': '+top_qrels_reversed[p])
-                            triples = [p1, p2, p3]
-                            #random.shuffle(triples)
-                            #triples.append(p3)
-                            triples_data_in_page.append(triples)
+                                    discard = True
+                            if not discard:
+                                triples = [p1, p2, p3]
+                                #random.shuffle(triples)
+                                #triples.append(p3)
+                                triples_data_in_page.append(triples)
+                            else:
+                                discard = False
             if len(triples_data_in_page) > 0:
                 triples_data[page] = triples_data_in_page
         c += 1
