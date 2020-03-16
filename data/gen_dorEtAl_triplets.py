@@ -16,16 +16,15 @@ def generate_triples(page_para_dict, pagewise_hier_qrels, top_qrels_reversed):
                 if len(simparas) > 1 and len(paras_in_page) > len(simparas):
                     for i in range(len(simparas)-1):
                         for j in range(i+1, len(simparas)):
-                            print(simparas)
                             p1 = simparas[i]
                             p2 = simparas[j]
                             p3 = random.sample([p for p in paras_in_page if p not in simparas], 1)[0]
-                            i = 0
+                            loop = 0
                             while top_qrels_reversed[p3] == top_qrels_reversed[p1]:
                                 p3 = random.sample([p for p in paras_in_page if p not in simparas], 1)[0]
-                                i += 1
-                                if i % 1000 == 0:
-                                    print(i)
+                                loop += 1
+                                if loop % 1000 == 0:
+                                    print(loop)
                                     print(paras_in_page)
                                     print(simparas)
                                     for p in paras_in_page:
