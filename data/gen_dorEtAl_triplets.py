@@ -7,25 +7,26 @@ def generate_triples(page_para_dict, pagewise_hier_qrels, top_qrels_reversed):
     print('Triples to be generated from '+str(page_num)+' pages')
     c = 0
     for page in page_para_dict.keys():
-        paras_in_page = page_para_dict[page]
-        hier_qrels_for_page = pagewise_hier_qrels[page]
-        triples_data_in_page = []
-        for hier in hier_qrels_for_page.keys():
-            simparas = [p for p in hier_qrels_for_page[hier] if p in paras_in_page]
-            if len(simparas) > 1 and len(paras_in_page) > len(simparas):
-                for i in range(len(simparas)-1):
-                    for j in range(i+1, len(simparas)):
-                        p1 = simparas[i]
-                        p2 = simparas[j]
-                        p3 = random.sample([p for p in paras_in_page if p not in simparas], 1)[0]
-                        while top_qrels_reversed[p3] == top_qrels_reversed[p1]:
+        if page in pagewise_hier_qrels.keys():
+            paras_in_page = page_para_dict[page]
+            hier_qrels_for_page = pagewise_hier_qrels[page]
+            triples_data_in_page = []
+            for hier in hier_qrels_for_page.keys():
+                simparas = [p for p in hier_qrels_for_page[hier] if p in paras_in_page]
+                if len(simparas) > 1 and len(paras_in_page) > len(simparas):
+                    for i in range(len(simparas)-1):
+                        for j in range(i+1, len(simparas)):
+                            p1 = simparas[i]
+                            p2 = simparas[j]
                             p3 = random.sample([p for p in paras_in_page if p not in simparas], 1)[0]
-                        triples = [p1, p2, p3]
-                        #random.shuffle(triples)
-                        #triples.append(p3)
-                        triples_data_in_page.append(triples)
-        if len(triples_data_in_page) > 0:
-            triples_data[page] = triples_data_in_page
+                            while top_qrels_reversed[p3] == top_qrels_reversed[p1]:
+                                p3 = random.sample([p for p in paras_in_page if p not in simparas], 1)[0]
+                            triples = [p1, p2, p3]
+                            #random.shuffle(triples)
+                            #triples.append(p3)
+                            triples_data_in_page.append(triples)
+            if len(triples_data_in_page) > 0:
+                triples_data[page] = triples_data_in_page
         c += 1
         if c % 1000 == 0:
             print(str(c)+' pages done')
