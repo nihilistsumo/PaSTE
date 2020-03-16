@@ -38,6 +38,7 @@ def generate_triples(page_para_dict, pagewise_hier_qrels, pagewise_top_qrels):
                                     for p in paras_in_page:
                                         print(p+': '+top_qrels_reversed[p])
                                     discard = True
+                                    break
                             if not discard:
                                 triples = [p1, p2, p3]
                                 #random.shuffle(triples)
