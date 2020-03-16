@@ -132,7 +132,7 @@ def main():
     val_pages_num = math.floor((total_pages_num-train_page_num)/2)
     train_pages = set(random.sample(triples_data.keys(), train_page_num))
     val_pages = set(random.sample(triples_data.keys()-train_pages, val_pages_num))
-    test_pages = triples_data.keys()-(train_pages+val_pages)
+    test_pages = set(triples_data.keys()-(train_pages.union(val_pages)))
 
     csvwriter_train.writerow(['Article Title', 'Passage1', 'Passage2', 'Passage3', 'Article Link'])
     for page in train_pages:
