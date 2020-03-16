@@ -1,13 +1,14 @@
 import random, json, sys, argparse, csv, math
 import numpy as np
 
-def generate_triples(page_para_dict, pagewise_hier_qrels, top_qrels_reversed):
+def generate_triples(page_para_dict, pagewise_hier_qrels, top_qrels):
     triples_data = dict()
     page_num = len(page_para_dict.keys())
     print('Triples to be generated from '+str(page_num)+' pages')
     c = 0
     for page in page_para_dict.keys():
         paras_in_page = page_para_dict[page]
+        top_qrels_reversed = get_reversed_top_qrels(top_qrels[page])
         diff_sec_in_page = set([top_qrels_reversed[p] for p in paras_in_page])
         if page in pagewise_hier_qrels.keys() and len(diff_sec_in_page) > 1:
             hier_qrels_for_page = pagewise_hier_qrels[page]
@@ -41,9 +42,10 @@ def generate_triples(page_para_dict, pagewise_hier_qrels, top_qrels_reversed):
             print(str(c)+' pages done')
     return triples_data
 
-def get_pagewise_hier_qrels(hier_qrels_file):
+# This method is for both toplevel and hier
+def get_pagewise_topic_qrels(qrels_file):
     pagewise_hq = dict()
-    with open(hier_qrels_file, 'r') as hq:
+    with open(qrels_file, 'r') as hq:
         for l in hq:
             hier_sec = l.split(' ')[0]
             page = hier_sec.split('/')[0]
@@ -57,11 +59,14 @@ def get_pagewise_hier_qrels(hier_qrels_file):
                     pagewise_hq[page][hier_sec] = [para]
     return pagewise_hq
 
-def get_reversed_top_qrels(top_qrels_file):
+def get_reversed_top_qrels(top_qrels_in_page):
     top_qrels_reverse = dict()
-    with open(top_qrels_file, 'r') as tq:
-        for l in tq:
-            top_qrels_reverse[l.split(" ")[2]] = l.split(" ")[0]
+    for top in top_qrels_in_page.keys():
+        for p in top_qrels_in_page[top]:
+            top_qrels_reverse[p] = top
+    # with open(top_qrels_file, 'r') as tq:
+    #     for l in tq:
+    #         top_qrels_reverse[l.split(" ")[2]] = l.split(" ")[0]
     return top_qrels_reverse
 
 def main():
@@ -105,9 +110,9 @@ def main():
             else:
                 page_paras[page] = [para]
 
-    top_qrels_rev = get_reversed_top_qrels(top_qrels_file)
-    hier_qrels = get_pagewise_hier_qrels(hier_qrels_file)
-    triples_data = generate_triples(page_paras, hier_qrels, top_qrels_rev)
+    top_qrels = get_pagewise_topic_qrels(top_qrels_file)
+    hier_qrels = get_pagewise_topic_qrels(hier_qrels_file)
+    triples_data = generate_triples(page_paras, hier_qrels, top_qrels)
     csvwriter_train = csv.writer(open(outdir+'/train.csv', 'w'))
     csvwriter_val = csv.writer(open(outdir + '/validation.csv', 'w'))
     csvwriter_test = csv.writer(open(outdir + '/test.csv', 'w'))
