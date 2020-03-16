@@ -25,6 +25,10 @@ def generate_triples(page_para_dict, pagewise_hier_qrels, top_qrels_reversed):
                                 i += 1
                                 if i % 1000 == 0:
                                     print(i)
+                                    print(paras_in_page)
+                                    print(simparas)
+                                    for p in paras_in_page:
+                                        print(p+': '+top_qrels_reversed[p])
                             triples = [p1, p2, p3]
                             #random.shuffle(triples)
                             #triples.append(p3)
