@@ -13,7 +13,7 @@ def generate_triples(page_para_dict, pagewise_hier_qrels, top_qrels_reversed):
             triples_data_in_page = []
             for hier in hier_qrels_for_page.keys():
                 simparas = [p for p in hier_qrels_for_page[hier] if p in paras_in_page]
-                if len(simparas) > 1 and len(paras_in_page) > len(simparas):
+                if len(simparas) > 2 and len(paras_in_page) > len(simparas):
                     for i in range(len(simparas)-1):
                         for j in range(i+1, len(simparas)):
                             p1 = simparas[i]
