@@ -6,7 +6,11 @@ def generate_triples(page_para_dict, pagewise_hier_qrels, pagewise_top_qrels):
     page_num = len(page_para_dict.keys())
     print('Triples to be generated from '+str(page_num)+' pages')
     c = 0
-    for page in page_para_dict.keys().intersection(pagewise_hier_qrels.keys().intersection(pagewise_top_qrels)):
+    page_para_pages = set(page_para_dict.keys())
+    top_pages = set(pagewise_top_qrels.keys())
+    hier_pages = set(pagewise_hier_qrels.keys())
+    common_pages = page_para_pages.intersection(top_pages.intersection(hier_pages))
+    for page in common_pages:
         paras_in_page = page_para_dict[page]
         top_qrels_reversed = get_reversed_top_qrels(pagewise_top_qrels[page])
         diff_sec_in_page = set([top_qrels_reversed[p] for p in paras_in_page])
