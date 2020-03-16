@@ -1,14 +1,14 @@
 import random, json, sys, argparse, csv, math
 import numpy as np
 
-def generate_triples(page_para_dict, pagewise_hier_qrels, top_qrels):
+def generate_triples(page_para_dict, pagewise_hier_qrels, pagewise_top_qrels):
     triples_data = dict()
     page_num = len(page_para_dict.keys())
     print('Triples to be generated from '+str(page_num)+' pages')
     c = 0
-    for page in page_para_dict.keys():
+    for page in page_para_dict.keys().intersection(pagewise_hier_qrels.keys().intersection(pagewise_top_qrels)):
         paras_in_page = page_para_dict[page]
-        top_qrels_reversed = get_reversed_top_qrels(top_qrels[page])
+        top_qrels_reversed = get_reversed_top_qrels(pagewise_top_qrels[page])
         diff_sec_in_page = set([top_qrels_reversed[p] for p in paras_in_page])
         if page in pagewise_hier_qrels.keys() and len(diff_sec_in_page) > 1:
             hier_qrels_for_page = pagewise_hier_qrels[page]
