@@ -3,13 +3,13 @@ import numpy as np
 
 def generate_triples(page_para_dict, pagewise_hier_qrels, pagewise_top_qrels):
     triples_data = dict()
-    page_num = len(page_para_dict.keys())
-    print('Triples to be generated from '+str(page_num)+' pages')
     c = 0
     page_para_pages = set(page_para_dict.keys())
     top_pages = set(pagewise_top_qrels.keys())
     hier_pages = set(pagewise_hier_qrels.keys())
     common_pages = page_para_pages.intersection(top_pages.intersection(hier_pages))
+    page_num = len(common_pages)
+    print('Triples to be generated from ' + str(page_num) + ' pages')
     for page in common_pages:
         paras_in_page = page_para_dict[page]
         top_qrels_reversed = get_reversed_top_qrels(pagewise_top_qrels[page])
