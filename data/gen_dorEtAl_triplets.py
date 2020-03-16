@@ -19,8 +19,12 @@ def generate_triples(page_para_dict, pagewise_hier_qrels, top_qrels_reversed):
                             p1 = simparas[i]
                             p2 = simparas[j]
                             p3 = random.sample([p for p in paras_in_page if p not in simparas], 1)[0]
+                            i = 0
                             while top_qrels_reversed[p3] == top_qrels_reversed[p1]:
                                 p3 = random.sample([p for p in paras_in_page if p not in simparas], 1)[0]
+                                i += 1
+                                if i % 1000 == 0:
+                                    print(i)
                             triples = [p1, p2, p3]
                             #random.shuffle(triples)
                             #triples.append(p3)
