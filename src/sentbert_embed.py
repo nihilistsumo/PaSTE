@@ -71,7 +71,7 @@ class SentbertParaEmbedding():
         return emb_dict
 
 # get embeddings of the whole para
-def get_embeddings(paratext_file, model_name, outdir, saveid=False, batch_size=10000):
+def get_embeddings(paratext_file, is_model_address, model_name, outdir, saveid=False, batch_size=10000):
     model = SentenceTransformer(model_name)
     print("Using "+model_name+" to embed paras as a whole")
     with open(paratext_file, 'r') as pt:
@@ -93,19 +93,28 @@ def get_embeddings(paratext_file, model_name, outdir, saveid=False, batch_size=1
                 embeds = model.encode(texts)
                 part += 1
                 print("Embedding complete, going to save part "+str(part)+", "+str(c)+" paras embedded\n")
-                np.save(outdir + '/' + model_name + '-part' + str(part), embeds)
+                if is_model_address:
+                    np.save(outdir + '/' + model_name.split('/')[len(model_name.split('/')) - 1] + '-part' + str(part),
+                            embeds)
+                else:
+                    np.save(outdir + '/' + model_name + '-part' + str(part), embeds)
                 texts = []
         print("Going to embed")
         embeds = model.encode(texts)
         part += 1
         print("Embedding complete, going to save part " + str(part) + ", " + str(c) + " paras embedded\n")
-        np.save(outdir + '/' + model_name + '-part' + str(part), embeds)
+        #np.save(outdir + '/' + model_name + '-part' + str(part), embeds)
+        if is_model_address:
+            np.save(outdir + '/' + model_name.split('/')[len(model_name.split('/')) - 1] + '-part' + str(part),
+                    embeds)
+        else:
+            np.save(outdir + '/' + model_name + '-part' + str(part), embeds)
         if saveid:
             print("Saving paraids file")
             ids = np.array(ids)
             np.save(outdir + '/paraids', ids)
 
-def get_sentence_wise_embeddings(paratext_file, model_name, outdir, saveid=False, batch_size=10000):
+def get_sentence_wise_embeddings(paratext_file, is_model_address, model_name, outdir, saveid=False, batch_size=10000):
     spacy.prefer_gpu()
     nlp = spacy.load('en_core_web_sm')
     model = SentenceTransformer(model_name)
@@ -135,14 +144,23 @@ def get_sentence_wise_embeddings(paratext_file, model_name, outdir, saveid=False
                 part += 1
                 offset = 0
                 print("Embedding complete, going to save part " + str(part) + ", " + str(c) + " paras embedded\n")
-                np.save(outdir + '/' + model_name + '-part' + str(part), embeds)
+                if is_model_address:
+                    np.save(outdir + '/' + model_name.split('/')[len(model_name.split('/')) - 1] + '-part' + str(part),
+                            embeds)
+                else:
+                    np.save(outdir + '/' + model_name + '-part' + str(part), embeds)
                 texts = []
         if len(texts) > 0:
             print("Going to embed")
             embeds = model.encode(texts)
             part += 1
             print("Embedding complete, going to save part " + str(part) + ", " + str(c) + " paras embedded\n")
-            np.save(outdir + '/' + model_name + '-part' + str(part), embeds)
+            #np.save(outdir + '/' + model_name + '-part' + str(part), embeds)
+            if is_model_address:
+                np.save(outdir + '/' + model_name.split('/')[len(model_name.split('/')) - 1] + '-part' + str(part),
+                        embeds)
+            else:
+                np.save(outdir + '/' + model_name + '-part' + str(part), embeds)
         if saveid:
             print("Saving paraids file")
             ids = np.array(ids)
@@ -152,21 +170,23 @@ def main():
     parser = argparse.ArgumentParser(description='Use sentence-transformers to embed paragraphs')
     parser.add_argument('-p', '--paratext_file', help='Path to paratext file')
     parser.add_argument('-t', '--emb_type', help='s = sentence wise emb, p = whole para emb')
-    parser.add_argument('-m', '--model_name', help='Name of the model to be used for embedding')
+    parser.add_argument('-ma', '--model_address', help='Treat model name as model dir address')
+    parser.add_argument('-m', '--model_name', action='store_true', help='Name of the model to be used for embedding')
     parser.add_argument('-o', '--outdir', help='Path to output dir')
     parser.add_argument('-i', '--save_id', type=bool, default=False, help='Save id file?')
     parser.add_argument('-b', '--batch_size', default=10000, help='Size of each batch to be encoded')
     args = vars(parser.parse_args())
     paratext_file = args['paratext_file']
     emb_type = args['emb_type']
+    is_model_address = args['model_address']
     model_name = args['model_name']
     outdir = args['outdir']
     saveid = args['save_id']
     batch = int(args['batch_size'])
     if emb_type == 'p':
-        get_embeddings(paratext_file, model_name, outdir, saveid, batch)
+        get_embeddings(paratext_file, is_model_address, model_name, outdir, saveid, batch)
     elif emb_type == 's':
-        get_sentence_wise_embeddings(paratext_file, model_name, outdir, saveid, batch)
+        get_sentence_wise_embeddings(paratext_file, is_model_address, model_name, outdir, saveid, batch)
     else:
         print("Wrong embedding type")
 
