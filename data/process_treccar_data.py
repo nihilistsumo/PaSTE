@@ -3,6 +3,7 @@ import sys
 import re
 import random
 import argparse
+import json
 
 def write_paratext_data(para_cbor, outfile):
     _RE_COMBINE_WHITESPACE = re.compile(r"\s+")
@@ -29,7 +30,7 @@ def get_score(p1score, p2score):
     TRASH = -2
     if p1score == MUST and p2score == MUST:
         score = 1.0
-    elif p1score == SHOULD and p2 == SHOULD:
+    elif p1score == SHOULD and p2score == SHOULD:
         score = 0.8
     elif p1score == CAN and p2score == CAN:
         score = 0.7
@@ -87,52 +88,55 @@ def convert_manual_parapair_data(rev_mq):
                     parapair_manual[p1 + '_' + p2].append((-1, rev_mq[p2][s]))
     return parapair_manual
 
-def write_parapair_data(parapair_manual, pos_count, outfile):
-    pairs = list(parapair_manual.keys())
-    random.shuffle(pairs)
-    pos = []
-    neg = []
-    posneg = []
-    for p in pairs:
-        pdat = parapair_manual[p]
-        for d in pdat:
-            if d[0] >= 0 and d[1] >= 0:
-                pos.append(p)
-                break
-        if len(pos) >= pos_count:
-            break
+def get_rel_page_paras(man_qrels):
+    rel_page_paras = {}
+    with open(man_qrels, 'r') as mq:
+        for l in mq:
+            page = l.split(' ')[0].split('/')[0]
+            para = l.split(' ')[2]
+            score = int(l.split(' ')[3])
+            if score < 0:
+                continue
+            else:
+                if page not in rel_page_paras.keys():
+                    rel_page_paras[page] = [para]
+                elif para not in rel_page_paras[page]:
+                    rel_page_paras[page].append(para)
+    return rel_page_paras
 
-    for p in pairs:
-        pdat = parapair_manual[p]
-        addit = True
-        for d in pdat:
-            if d[0] >= 0 and d[1] >= 0:
+def write_parapair_data(parapair_manual, rel_page_paras, outfile):
+    parapairs = {}
+    for p in rel_page_paras.keys():
+        print(p)
+        paras = rel_page_paras[p]
+        for i in range(len(paras) - 1):
+            for j in range(i + 1, len(paras)):
+                p1 = paras[i]
+                p2 = paras[j]
+                if p1 + '_' + p2 in parapair_manual.keys():
+                    dat = parapair_manual[p1 + '_' + p2]
+                else:
+                    dat = parapair_manual[p2 + '_' + p1]
                 addit = False
-                break
-        if addit:
-            neg.append(p)
-        if len(neg) >= pos_count:
-            break
-
-    for p in pos:
-        p1 = p.split('_')[0]
-        p2 = p.split('_')[1]
-        pdat = parapair_manual[p]
-        score = 0
-        for d in pdat:
-            if d[0] >= 0 and d[1] >= 0:
-                score += get_score(d[0], d[1])
-        score = score / len(pdat)
-        posneg.append(str(score) + '\t' + p1 + '\t' + p2)
-
-    for p in neg:
-        p1 = p.split('_')[0]
-        p2 = p.split('_')[1]
-        posneg.append('0.0\t' + p1 + '\t' + p2)
-    random.shuffle(posneg)
+                for d in dat:
+                    if d[0] >= 0 and d[1] >= 0:
+                        addit = True
+                        break
+                if not addit:
+                    continue
+                s = 0.0
+                for d in dat:
+                    s += get_score(d[0], d[1])
+                s = s / len(dat)
+                if s < 0.0000000001:
+                    print(p + ': ' + p1 + ', ' + p2 + ', ' + str(dat))
+                if p not in parapairs.keys():
+                    parapairs[p] = {'parapairs': [p1 + '_' + p2], 'labels': [s]}
+                else:
+                    parapairs[p]['parapairs'].append(p1 + '_' + p2)
+                    parapairs[p]['labels'].append(s)
     with open(outfile, 'w') as out:
-        for l in posneg:
-            out.write(l+'\n')
+        json.dump(parapairs, out)
 
 
 ##############
@@ -175,15 +179,15 @@ def write_query_attn_from_manual_qrels(manual_qrels, outfile):
 def main():
     parser = argparse.ArgumentParser(description='Write parapair data from manual qrels: score \\t p1 \\t p2')
     parser.add_argument('-mq', '--manual_qrels', help='Path to manual qrels')
-    parser.add_argument('-pc', '--pos_count', help='Count of pos samples = neg samples')
     parser.add_argument('-o', '--outfile', help='Path to output file')
     args = vars(parser.parse_args())
     mq = args['manual_qrels']
-    pc = int(args['pos_count'])
     out = args['outfile']
     rev_mq = get_rev_hier_qrels(mq)
     parapair_manual = convert_manual_parapair_data(rev_mq)
-    write_parapair_data(parapair_manual, pc, out)
+    rel_page_paras = get_rel_page_paras(mq)
+    write_parapair_data(parapair_manual, rel_page_paras, out)
+
 
 if __name__ == '__main__':
     main()
