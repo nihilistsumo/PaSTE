@@ -94,7 +94,7 @@ def main():
     parser = argparse.ArgumentParser(description='Use pre-trained models to predict on para similarity data')
     parser.add_argument('-p', '--parapair_file', help='Path to parapair file in BERT seq pair format')
     parser.add_argument('-t', '--processed_textfile', help='Path to processed pairtext file')
-    parser.add_argument('-n', '--model_type', default='', help='Type of model (bert/roberta/albert/xlnet/xlmroberta/flaubert)')
+    parser.add_argument('-n', '--model_type', default='', help='Type of model (bert/roberta/albert/xlm/xlnet/xlmroberta/flaubert)')
     parser.add_argument('-m', '--model_path', default='', help='Path to pre-trained/fine tuned model')
     parser.add_argument('-b', '--batch_size', help='Batch size of the tensors submitted to GPU')
     # parser.add_argument('-i', '--paraids_emb', help='Path to paraids file corresponding to the para embeddings')
