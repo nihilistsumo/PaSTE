@@ -12,6 +12,7 @@ from scipy.spatial import distance
 
 def get_pair_ids(pairtext_file):
     pair_ids = []
+    splitter = '_'
     with open(pairtext_file, 'r') as tst:
         i = 0
         fl = True
@@ -21,8 +22,12 @@ def get_pair_ids(pairtext_file):
                 continue
             id1 = l.split('\t')[1]
             id2 = l.split('\t')[2]
-            pair_ids.append(id1 + '_' + id2)
-    return pair_ids
+            if '_' in id1:
+                pair_ids.append(id1 + '#' + id2)
+                splitter = '#'
+            else:
+                pair_ids.append(id1 + '_' + id2)
+    return pair_ids, splitter
 
 def get_para_embed_vec(pid, paraids, embed_dir, embed_file_prefix, batch_size):
     pindex = paraids.index(pid)
@@ -32,14 +37,14 @@ def get_para_embed_vec(pid, paraids, embed_dir, embed_file_prefix, batch_size):
     emb_vec = embed_arr[part_offset]
     return emb_vec
 
-def get_embed_similarity_scores(pair_ids, paraids, embed_dir, embed_file_prefix, batch_size, norm=-1):
+def get_embed_similarity_scores(pair_ids, paraids, splitter, embed_dir, embed_file_prefix, batch_size, norm=-1):
     pred_dict = dict()
     c = 10000
     if batch_size == -1:
         emb_list = np.load(embed_dir + '/' + embed_file_prefix + '-part1.npy')
     for i in range(len(pair_ids)):
-        p1 = pair_ids[i].split('_')[0]
-        p2 = pair_ids[i].split('_')[1]
+        p1 = pair_ids[i].split(splitter)[0]
+        p2 = pair_ids[i].split(splitter)[1]
         if batch_size == -1:
             p1vec = emb_list[paraids.index(p1)]
             p2vec = emb_list[paraids.index(p2)]
@@ -74,8 +79,8 @@ def main():
     outfile = args['outfile']
     parapairids = get_pair_ids(pp_file)
     # if model_path == '' and model_type == '':
-    paraids = list(np.load(paraids_file))
-    pred_dict = get_embed_similarity_scores(parapairids, paraids, emb_dir, emb_prefix, batch, norm)
+    paraids, splitter = list(np.load(paraids_file))
+    pred_dict = get_embed_similarity_scores(parapairids, paraids, splitter, emb_dir, emb_prefix, batch, norm)
     print("Writing parapair score file")
     with open(outfile, 'w') as out:
         json.dump(pred_dict, out)
