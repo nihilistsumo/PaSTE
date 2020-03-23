@@ -77,9 +77,9 @@ def main():
     emb_prefix = args['emb_file_prefix']
     norm = int(args['normalization'])
     outfile = args['outfile']
-    parapairids = get_pair_ids(pp_file)
+    parapairids, splitter = get_pair_ids(pp_file)
     # if model_path == '' and model_type == '':
-    paraids, splitter = list(np.load(paraids_file))
+    paraids = list(np.load(paraids_file))
     pred_dict = get_embed_similarity_scores(parapairids, paraids, splitter, emb_dir, emb_prefix, batch, norm)
     print("Writing parapair score file")
     with open(outfile, 'w') as out:
