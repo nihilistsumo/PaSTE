@@ -12,6 +12,7 @@ from scipy.spatial import distance
 
 def get_pair_ids(pairtext_file):
     pair_ids = []
+    splitter = '_'
     with open(pairtext_file, 'r') as tst:
         i = 0
         fl = True
@@ -21,8 +22,12 @@ def get_pair_ids(pairtext_file):
                 continue
             id1 = l.split('\t')[1]
             id2 = l.split('\t')[2]
-            pair_ids.append(id1 + '_' + id2)
-    return pair_ids
+            if '_' in id1:
+                pair_ids.append(id1 + '#' + id2)
+                splitter = '#'
+            else:
+                pair_ids.append(id1 + '_' + id2)
+    return pair_ids, splitter
 
 def get_similarity_scores(processed_text, pair_ids, model_type, model_path, batch_size=100):
     if model_type == 'bert':
@@ -113,7 +118,7 @@ def main():
     # emb_prefix = args['emb_file_prefix']
     # norm = int(args['normalization'])
     outdir = args['outdir']
-    parapairids = get_pair_ids(pp_file)
+    parapairids, splitter = get_pair_ids(pp_file)
     # if model_path == '' and model_type == '':
     #     paraids = list(np.load(paraids_file))
     #     pred_dict = get_embed_similarity_scores(parapairids, paraids, emb_dir, emb_prefix, batch, norm)
