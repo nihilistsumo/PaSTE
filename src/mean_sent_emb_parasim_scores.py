@@ -37,12 +37,12 @@ def get_embed_similarity_scores(pair_ids, paraids_dict, splitter, embed_dir, emb
     for i in range(len(pair_ids)):
         p1 = pair_ids[i].split(splitter)[0]
         p2 = pair_ids[i].split(splitter)[1]
-        part_p1 = paraids_dict[p1][0]
-        start_index_p1 = paraids_dict[p1][1]
-        len_p1 = paraids_dict[p1][2]
-        part_p2 = paraids_dict[p2][0]
-        start_index_p2 = paraids_dict[p2][1]
-        len_p2 = paraids_dict[p2][2]
+        part_p1 = int(paraids_dict[p1][0])
+        start_index_p1 = int(paraids_dict[p1][1])
+        len_p1 = int(paraids_dict[p1][2])
+        part_p2 = int(paraids_dict[p2][0])
+        start_index_p2 = int(paraids_dict[p2][1])
+        len_p2 = int(paraids_dict[p2][2])
         if batch_size == -1:
             p1vec = np.mean(emb_list[start_index_p1: start_index_p1 + len_p1], axis=0)
             p2vec = np.mean(emb_list[start_index_p2: start_index_p2 + len_p2], axis=0)
