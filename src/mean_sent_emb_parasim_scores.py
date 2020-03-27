@@ -45,11 +45,11 @@ def get_embed_similarity_scores(pair_ids, paraids_dict, splitter, embed_dir, emb
         len_p2 = int(paraids_dict[p2][2])
         if batch_size == -1:
             if len_p1 == 0:
-                p1vec = np.zeros(emb_list.shape[1])
+                p1vec = np.ones(emb_list.shape[1])
             else:
                 p1vec = np.mean(emb_list[start_index_p1: start_index_p1 + len_p1], axis=0)
             if len_p2 == 0:
-                p2vec = np.zeros(emb_list.shape[1])
+                p2vec = np.ones(emb_list.shape[1])
             else:
                 p2vec = np.mean(emb_list[start_index_p2: start_index_p2 + len_p2], axis=0)
         else:
@@ -57,14 +57,14 @@ def get_embed_similarity_scores(pair_ids, paraids_dict, splitter, embed_dir, emb
                 emb_list = np.load(embed_dir + '/' + embed_file_prefix + '-part' + str(part_p1) + '.npy')
                 part_cache = part_p1
             if len_p1 == 0:
-                p1vec = np.zeros(emb_list.shape[1])
+                p1vec = np.ones(emb_list.shape[1])
             else:
                 p1vec = np.mean(emb_list[start_index_p1: start_index_p1 + len_p1], axis=0)
             if part_p2 != part_cache:
                 emb_list = np.load(embed_dir + '/' + embed_file_prefix + '-part' + str(part_p2) + '.npy')
                 part_cache = part_p2
             if len_p2 == 0:
-                p2vec = np.zeros(emb_list.shape[1])
+                p2vec = np.ones(emb_list.shape[1])
             else:
                 p2vec = np.mean(emb_list[start_index_p2: start_index_p2 + len_p2], axis=0)
         if norm == -1:
