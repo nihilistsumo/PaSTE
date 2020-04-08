@@ -187,7 +187,7 @@ class Siamese_Network(nn.Module):
         self.z2 = torch.relu(self.LL1(self.z))
         self.z3 = self.sm(self.z2)
         o = nn.BCELoss(self.z3)
-        o = o.reshape(-1)
+        #o = o.reshape(-1)
         return o
 
     def num_flat_features(self, X):
