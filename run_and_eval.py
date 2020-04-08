@@ -106,8 +106,8 @@ def main():
         exit(1)
 
 
-    #criterion = nn.MSELoss().cuda(device1)
-    criterion = nn.BCELoss().cuda(device1)
+    criterion = nn.MSELoss().cuda(device1)
+    #criterion = nn.BCELoss().cuda(device1)
     opt = optim.SGD(NN.parameters(), lr=lrate)
     print()
     with open(log_out, 'w') as lo:
