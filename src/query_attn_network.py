@@ -172,16 +172,16 @@ class Siamese_Network(nn.Module):
         self.emb_size = 768
         self.cosine_sim = nn.CosineSimilarity()
         # self.LL1 = nn.Linear(self.emb_size, self.emb_size)
-        self.LL1 = nn.Linear(3*self.emb_size, 1)
+        self.LL1 = nn.Linear(2*self.emb_size, 1)
 
     def forward(self, X):
         self.Xq = X[:, :self.emb_size]
         self.Xp1 = X[:, self.emb_size:2 * self.emb_size]
         self.Xp2 = X[:, 2 * self.emb_size:]
-        #self.z1 = torch.relu(self.LL1(self.Xp1))
-        #self.z2 = torch.relu(self.LL1(self.Xp2))
-        self.zdiff = torch.abs(self.Xp1 - self.Xp2)
-        self.z = torch.cat((self.Xp1, self.Xp2, self.zdiff), dim=1)
+        self.z1 = torch.abs(self.Xp1 - self.Xq)
+        self.z2 = torch.abs(self.Xp2 - self.Xq)
+        #self.zdiff = torch.abs(self.Xp1 - self.Xp2)
+        self.z = torch.cat((self.z1, self.z2), dim=1)
         #o = self.cosine_sim(self.z1, self.z2)  # final activation function
         o = torch.relu(self.LL1(self.z))
         o = o.reshape(-1)
