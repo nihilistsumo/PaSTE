@@ -184,6 +184,7 @@ class Siamese_Network(nn.Module):
         self.z = torch.cat((self.Xp1, self.Xp2, self.zdiff), dim=1)
         #o = self.cosine_sim(self.z1, self.z2)  # final activation function
         o = self.LL1(self.z)
+        o = o.reshape(-1)
         return o
 
     def num_flat_features(self, X):
