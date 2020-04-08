@@ -67,8 +67,8 @@ def write_query_attn_dataset_parapair(parapair_data, outfile):
         for d in data:
             out.write(d+'\n')
 
-def get_data(emb_dir, emb_file_prefix, emb_paraids_file, query_attn_data_file, emb_mode, batch_size=10000):
-    model = SentenceTransformer(emb_file_prefix)
+def get_data(emb_dir, emb_model, emb_file_prefix, emb_paraids_file, query_attn_data_file, emb_mode, batch_size=10000):
+    model = SentenceTransformer(emb_model)
     paraids = list(np.load(emb_paraids_file))
     X= []
     y= []
