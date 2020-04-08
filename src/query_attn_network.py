@@ -183,7 +183,7 @@ class Siamese_Network(nn.Module):
         self.zdiff = torch.abs(self.Xp1 - self.Xp2)
         self.z = torch.cat((self.Xp1, self.Xp2, self.zdiff), dim=1)
         #o = self.cosine_sim(self.z1, self.z2)  # final activation function
-        o = self.LL1(self.z)
+        o = torch.relu(self.LL1(self.z))
         o = o.reshape(-1)
         return o
 
