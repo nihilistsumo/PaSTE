@@ -110,6 +110,7 @@ def main():
     #criterion = nn.BCELoss().cuda(device1)
     opt = optim.SGD(NN.parameters(), lr=lrate)
     print()
+    test_auc = 0.0
     with open(log_out, 'w') as lo:
         for i in range(iter):
             opt.zero_grad()
@@ -117,9 +118,12 @@ def main():
             loss = criterion(output, y_train)
             y_val_pred = NN.predict(X_val).detach().cpu().numpy()
             val_auc_score = roc_auc_score(y_val, y_val_pred)
-            sys.stdout.write('\r' + 'Iteration: ' + str(i) + ', loss: ' +str(loss) + ', val AUC: ' + '{:.4f}'.format(val_auc_score))
+            sys.stdout.write('\r' + 'Iteration: ' + str(i) + ', loss: ' +str(loss) + ', val AUC: ' +
+                             '{:.4f}'.format(val_auc_score) + ', test AUC: ' + '{:.4f}'.format(test_auc))
             if i%10 == 0:
                 lo.write('Iteration: ' + str(i) + ', loss: ' +str(loss) + ', val AUC: ' +str(val_auc_score) + '\n')
+                y_pred = NN.predict(X_test).detach().cpu().numpy()
+                test_auc = roc_auc_score(y_test, y_pred)
             loss.backward()
             opt.step()
     # NN.saveWeights(NN)
