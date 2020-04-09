@@ -173,8 +173,8 @@ class Siamese_Network(nn.Module):
         self.cosine_sim = nn.CosineSimilarity()
         # self.LL1 = nn.Linear(self.emb_size, self.emb_size)
         self.LL1 = nn.Linear(self.emb_size, self.emb_size)
-        self.LL2 = nn.Linear(self.emb_size, self.emb_size)
-        self.LL3 = nn.Linear(4*self.emb_size, 1)
+        #self.LL2 = nn.Linear(self.emb_size, self.emb_size)
+        self.LL3 = nn.Linear(6*self.emb_size, 1)
 
     def forward(self, X):
         self.Xq = X[:, :self.emb_size]
@@ -185,9 +185,11 @@ class Siamese_Network(nn.Module):
         self.zdiff = torch.abs(self.Xp1 - self.Xp2)
         self.zp1 = torch.relu(self.LL1(self.Xp1))
         self.zp2 = torch.relu(self.LL1(self.Xp2))
-        self.zql = torch.relu(self.LL2(self.Xq))
+        self.zql = torch.relu(self.LL1(self.Xq))
         self.zd = torch.abs(self.zp1 - self.zp2)
-        self.z = torch.cat((self.zql, self.zp1, self.zp2, self.zd), dim=1)
+        self.zdqp1 = torch.abs(self.zp1 - self.zql)
+        self.zdqp2 = torch.abs(self.zp2 - self.zql)
+        self.z = torch.cat((self.zql, self.zp1, self.zp2, self.zd, self.zdqp1, self.zdqp2), dim=1)
         #o = self.cosine_sim(self.z1, self.z2)  # final activation function
         o = torch.relu(self.LL3(self.z))
         o = o.reshape(-1)
