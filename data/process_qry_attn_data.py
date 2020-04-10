@@ -67,28 +67,16 @@ def write_query_attn_dataset_parapair(parapair_data, outfile):
         for d in data:
             out.write(d+'\n')
 
-def get_data(emb_dir, emb_model, emb_file_prefix, emb_paraids_file, query_attn_data_file, emb_mode, batch_size=10000):
+def get_data(emb_model, emb_file, emb_paraids_file, query_attn_data_file):
     model = SentenceTransformer(emb_model)
     paraids = list(np.load(emb_paraids_file))
     X= []
     y= []
-    if emb_mode == 's':
-        para_emb = np.load(emb_dir + '/' + emb_file_prefix + '-part1.npy')
-        para_emb_dict = dict()
-        for i in range(len(paraids)):
-            para_emb_dict[paraids[i]] = para_emb[i]
-    elif emb_mode == 'm':
-        emb = SentbertParaEmbedding(emb_paraids_file, emb_dir, emb_file_prefix, batch_size)
-        # Not needed if using get_single_embedding of sentbert
-        # paraids_dat = set()
-        # with open(query_attn_data_file, 'r') as qd:
-        #     for l in qd:
-        #         paraids_dat.add(l.split('\t')[2])
-        #         paraids_dat.add(l.split('\t')[3].rstrip())
-        # para_emb_dict = emb.get_embeddings(list(paraids_dat))
-    else:
-        print('Embedding mode not supported')
-        return 1
+
+    para_emb = np.load(emb_file)
+    para_emb_dict = dict()
+    for i in range(len(paraids)):
+        para_emb_dict[paraids[i]] = para_emb[i]
 
     count = 0
     for line in open(query_attn_data_file).readlines(): count += 1
@@ -105,18 +93,14 @@ def get_data(emb_dir, emb_model, emb_file_prefix, emb_paraids_file, query_attn_d
             p1_list.append(l.split('\t')[2])
             p2_list.append(l.split('\t')[3].rstrip())
             targets.append(float(l.split('\t')[0]))
-    print('Using ' + emb_file_prefix + ' to embed query, should be same as the embedding file')
+    print('Using ' + emb_file + ' to embed query, should be same as the embedding file')
     qemb_list = model.encode(queries, show_progress_bar=True)
     print('Queries embedded, now formatting the data into tensors')
     c = 0
     for i in range(len(queries)):
         qemb = qemb_list[i]
-        if emb_mode == 's':
-            p1emb = para_emb_dict[p1_list[i]]
-            p2emb = para_emb_dict[p2_list[i]]
-        elif emb_mode == 'm':
-            p1emb = emb.get_single_embedding(p1_list[i])
-            p2emb = emb.get_single_embedding(p2_list[i])
+        p1emb = para_emb_dict[p1_list[i]]
+        p2emb = para_emb_dict[p2_list[i]]
 
         if p1emb is None or p2emb is None:
             continue

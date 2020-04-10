@@ -25,17 +25,14 @@ def main():
     # y_test = cosine_sim(X_testp1, X_testp2)
 
     parser = argparse.ArgumentParser(description='Train and evaluate query attentive network for paragraph similarity task')
-    parser.add_argument('-e', '--emb_dir', help='Path to para embedding directory for train split paras')
-    parser.add_argument('-et', '--emb_dir_test', help='Path to para embedding directory for test split paras')
+    parser.add_argument('-e', '--emb_file_train', help='Path to para embedding file for train split paras')
+    parser.add_argument('-et', '--emb_file_test', help='Path to para embedding file for test split paras')
     parser.add_argument('-n', '--neural_model', help='Neural model variation (0/1/2)')
     parser.add_argument('-lr', '--learning_rate', help='Learning rate')
     parser.add_argument('-i', '--num_iteration', help='No. of iteration')
     parser.add_argument('-mp', '--emb_model_name', help='Emb model name or path')
-    parser.add_argument('-ep', '--emb_file_prefix', help='Name of the model used to embed the paras/ embedding file prefix')
-    parser.add_argument('-p', '--emb_paraids_file', help='Path to train embedding paraids file')
+    parser.add_argument('-p', '--train_emb_paraids_file', help='Path to train embedding paraids file')
     parser.add_argument('-pt', '--test_emb_paraids_file', help='Path to test embedding paraids file')
-    parser.add_argument('-em', '--emb_mode', help='Embedding mode: s=single embedding file, m=multi emb files in shards')
-    parser.add_argument('-b', '--emb_batch_size', help='Batch size of each embedding file shard')
     parser.add_argument('-d', '--train_data_file', help='Path to train data file')
     parser.add_argument('-t', '--test_data_file', help='Path to test data file')
     parser.add_argument('-qd', '--query_dim', type=int, help='Dimension of query embedding to be reduced by Raunak et al')
@@ -44,17 +41,14 @@ def main():
     parser.add_argument('-oe', '--out_emb', type=int, help='Output size of dimred NN')
     parser.add_argument('-o', '--model_outfile', help='Path to save the trained model')
     args = vars(parser.parse_args())
-    emb_dir = args['emb_dir']
-    emb_dir_test = args['emb_dir_test']
+    emb_file_train = args['emb_file_train']
+    emb_file_test = args['emb_file_test']
     variation = int(args['neural_model'])
     lrate = float(args['learning_rate'])
     iter = int(args['num_iteration'])
     emb_model_name = args['emb_model_name']
-    emb_prefix = args['emb_file_prefix']
-    emb_pids_file = args['emb_paraids_file']
+    emb_pids_file = args['train_emb_paraids_file']
     test_emb_pids_file = args['test_emb_paraids_file']
-    emb_mode = args['emb_mode']
-    emb_batch = int(args['emb_batch_size'])
     train_filepath = args['train_data_file']
     test_filepath = args['test_data_file']
     model_out = args['model_outfile']
@@ -71,16 +65,13 @@ def main():
         oemb = int(args['out_emb'])
     log_out = model_out + '.train.log'
     if variation != 0:
-        X, y = dat.get_data(emb_dir, emb_model_name, emb_prefix, emb_pids_file, train_filepath, emb_mode, emb_batch)
+        X, y = dat.get_data(emb_model_name, emb_file_train, emb_pids_file, train_filepath)
 
         X_val = X[:100, :].cuda(device1)
         y_val = y[:100]
         X_train = X[100:, :].cuda(device1)
         y_train = y[100:].cuda(device1)
-    if emb_dir_test == '':
-        X_test, y_test = dat.get_data(emb_dir, emb_model_name, emb_prefix, test_emb_pids_file, test_filepath, 's')
-    else:
-        X_test, y_test = dat.get_data(emb_dir_test, emb_model_name, emb_prefix, test_emb_pids_file, test_filepath, 's')
+    X_test, y_test = dat.get_data(emb_model_name, emb_file_test, test_emb_pids_file, test_filepath)
     X_test = X_test.cuda(device1)
 
     if variation == 1:
