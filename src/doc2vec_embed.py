@@ -5,7 +5,7 @@ import smart_open
 import argparse
 import numpy as np
 
-def read_paratext(fname, tokens_only=False):
+def read_paratext(fname, num_samples, tokens_only=False):
     tokens = []
     ids = []
     with smart_open.open(fname, encoding="iso-8859-1") as f:
@@ -18,12 +18,14 @@ def read_paratext(fname, tokens_only=False):
                 tokens.append(TaggedDocument(simple_preprocess(line.split('\t')[1]), [i]))
             ids.append(line.split('\t')[0])
             i += 1
+            if num_samples > 0 and i >= num_samples:
+                break
             if i%10000 == 0:
                 print(str(i)+' docs read')
     return tokens, ids
 
-def train(paratext_file, vec_size, ep):
-    train_corpus, paraids = read_paratext(paratext_file)
+def train(paratext_file, num_samples, vec_size, ep):
+    train_corpus, paraids = read_paratext(paratext_file, num_samples)
     model = Doc2Vec(vector_size=vec_size, min_count=2, epochs=ep)
     model.build_vocab(train_corpus)
     print("Text processed, now going to train...")
@@ -33,7 +35,7 @@ def train(paratext_file, vec_size, ep):
 
 def infer(paratext_file, model):
     vecs = []
-    test_corpus, paraids = read_paratext(paratext_file, True)
+    test_corpus, paraids = read_paratext(paratext_file, -1, True)
     for i in range(len(paraids)):
         vecs.append(model.infer_vector(test_corpus[i]))
         i += 1
@@ -45,16 +47,18 @@ def main():
     parser = argparse.ArgumentParser(description='Paragraph vector')
     parser.add_argument('-pr', '--train_paratext', help='Path to train paratext file')
     parser.add_argument('-pt', '--test_paratext', help='Path to test paratext file')
+    parser.add_argument('-nt', '--num_train', type=int, help='Num train paragraph samples to use for training')
     parser.add_argument('-vs', '--vec_size', type=int, help='Size of embedding vector')
     parser.add_argument('-ep', '--num_epochs', type=int, help='Num of epochs to train')
     parser.add_argument('-od', '--outdir', help='Path t output dir')
     args = vars(parser.parse_args())
     train_pt = args['train_paratext']
     test_pt = args['test_paratext']
+    num_train = args['num_train']
     vec_size = args['vec_size']
     epochs = args['num_epochs']
     outdir = args['outdir']
-    m = train(train_pt, vec_size, epochs)
+    m = train(train_pt, num_train, vec_size, epochs)
     paraids, vecs = infer(test_pt, m)
     np.save(outdir+'/paraids.npy', paraids)
     np.save(outdir+'/doc2vec_embedding_vecs.npy', vecs)
