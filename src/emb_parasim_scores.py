@@ -37,20 +37,16 @@ def get_para_embed_vec(pid, paraids, embed_dir, embed_file_prefix, batch_size):
     emb_vec = embed_arr[part_offset]
     return emb_vec
 
-def get_embed_similarity_scores(pair_ids, paraids, splitter, embed_dir, embed_file_prefix, batch_size, norm=-1):
+def get_embed_similarity_scores(pair_ids, paraids, splitter, embed_vec_file, norm=-1):
     pred_dict = dict()
     c = 10000
-    if batch_size == -1:
-        emb_list = np.load(embed_dir + '/' + embed_file_prefix + '-part1.npy')
+    emb_list = np.load(embed_vec_file)
     for i in range(len(pair_ids)):
         p1 = pair_ids[i].split(splitter)[0]
         p2 = pair_ids[i].split(splitter)[1]
-        if batch_size == -1:
-            p1vec = emb_list[paraids.index(p1)]
-            p2vec = emb_list[paraids.index(p2)]
-        else:
-            p1vec = get_para_embed_vec(p1, paraids, embed_dir, embed_file_prefix, batch_size)
-            p2vec = get_para_embed_vec(p2, paraids, embed_dir, embed_file_prefix, batch_size)
+        p1vec = emb_list[paraids.index(p1)]
+        p2vec = emb_list[paraids.index(p2)]
+
         if norm == -1:
             pred_dict[pair_ids[i]] = 1 - distance.cosine(p1vec, p2vec)
         else:
@@ -61,26 +57,21 @@ def get_embed_similarity_scores(pair_ids, paraids, splitter, embed_dir, embed_fi
 
 def main():
     parser = argparse.ArgumentParser(description='Use pre-trained models to predict on para similarity data')
-    parser.add_argument('-p', '--parapair_file', help='Path to parapair file in BERT seq pair format')
-    parser.add_argument('-b', '--batch_size', help='Size of each para embedding shards if there\n'
-                                                   'are multiple shards or -1 if there is a single embedding file')
-    parser.add_argument('-i', '--paraids_emb', help='Path to paraids file corresponding to the para embeddings')
-    parser.add_argument('-e', '--emb_dir', help='Path to the para embedding dir')
-    parser.add_argument('-x', '--emb_file_prefix', help='Common part of the file name of each embedding shards')
+    parser.add_argument('-pp', '--parapair_file', help='Path to parapair file in BERT seq pair format')
+    parser.add_argument('-ei', '--paraids_emb', help='Path to paraids file corresponding to the para embeddings')
+    parser.add_argument('-ev', '--emb_file', help='Path to emb vec file')
     parser.add_argument('-nm', '--normalization', default=-1, help='Normalization for embedding vecs (-1 for no norm)')
-    parser.add_argument('-o', '--outfile', help='Path to parapair score output directory')
+    parser.add_argument('-so', '--outfile', help='Path to parapair score output directory')
     args = vars(parser.parse_args())
     pp_file = args['parapair_file']
-    batch = int(args['batch_size'])
     paraids_file = args['paraids_emb']
-    emb_dir = args['emb_dir']
-    emb_prefix = args['emb_file_prefix']
+    emb_vec_file = args['emb_file']
     norm = int(args['normalization'])
     outfile = args['outfile']
     parapairids, splitter = get_pair_ids(pp_file)
     # if model_path == '' and model_type == '':
     paraids = list(np.load(paraids_file))
-    pred_dict = get_embed_similarity_scores(parapairids, paraids, splitter, emb_dir, emb_prefix, batch, norm)
+    pred_dict = get_embed_similarity_scores(parapairids, paraids, splitter, emb_vec_file, norm)
     print("Writing parapair score file")
     with open(outfile, 'w') as out:
         json.dump(pred_dict, out)
