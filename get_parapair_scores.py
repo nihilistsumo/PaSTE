@@ -5,7 +5,7 @@ from src.query_attn_network import Siamese_Network
 import json
 from json import encoder
 import numpy as np
-encoder.FLOAT_REPR = lambda o: format(o, '.16f')
+encoder.FLOAT_REPR = lambda o: format(o, '.8f')
 
 def write_parapair_scores(nn_model_path, emb_model_name, emb_vec_file, emb_pids_file, qry_attn_file, outfile):
     X_test, y_test = dat.get_data(emb_model_name, emb_vec_file, emb_pids_file, qry_attn_file)
