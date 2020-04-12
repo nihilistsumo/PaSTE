@@ -3,6 +3,7 @@ from data import process_qry_attn_data as dat
 import torch
 from src.query_attn_network import Siamese_Network
 import json
+import numpy as np
 
 def write_parapair_scores(nn_model_path, emb_model_name, emb_vec_file, emb_pids_file, qry_attn_file, outfile):
     X_test, y_test = dat.get_data(emb_model_name, emb_vec_file, emb_pids_file, qry_attn_file)
@@ -16,7 +17,7 @@ def write_parapair_scores(nn_model_path, emb_model_name, emb_vec_file, emb_pids_
             parapairs.append(l.split('\t')[2]+'_'+l.split('\t')[3].rstrip())
     parapair_score_dict = {}
     for i in range(len(parapairs)):
-        parapair_score_dict[parapairs[i]] = y_pred[i]
+        parapair_score_dict[parapairs[i]] = np.float128(y_pred[i])
         if i%10000 == 0:
             print(str(i) + ' samples inferred')
     with open(outfile, 'w') as out:
