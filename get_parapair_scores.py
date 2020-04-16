@@ -16,7 +16,10 @@ def write_parapair_scores(nn_model_path, emb_model_name, emb_vec_file, emb_pids_
     parapairs = []
     with open(qry_attn_file, 'r') as qd:
         for l in qd:
-            parapairs.append(l.split('\t')[2]+'_'+l.split('\t')[3].rstrip())
+            if '_' in l.split('\t')[2]:
+                parapairs.append(l.split('\t')[2] + '#' + l.split('\t')[3].rstrip())
+            else:
+                parapairs.append(l.split('\t')[2] + '_' + l.split('\t')[3].rstrip())
     parapair_score_dict = {}
     for i in range(len(parapairs)):
         parapair_score_dict[parapairs[i]] = float(y_pred[i])
