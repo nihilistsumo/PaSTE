@@ -5,7 +5,11 @@ import argparse
 def get_sent_embs(pid, id_dict, vecs):
     start = int(id_dict[pid][0])
     l = int(id_dict[pid][1])
-    embs = vecs[start:start+l]
+    if l == 0:
+        embs = np.array([np.zeros(vecs[0].shape)])
+        print('zero vec')
+    else:
+        embs = vecs[start:start+l]
     return embs
 
 def convert(input_sent_dir, output_dir):
