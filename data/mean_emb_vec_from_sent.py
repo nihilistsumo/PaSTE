@@ -9,7 +9,7 @@ def get_sent_embs(pid, id_dict, vecs):
     return embs
 
 def convert(input_sent_dir, output_dir):
-    files = os.listdir()
+    files = os.listdir(input_sent_dir)
     sent_pids = np.load(input_sent_dir+'/paraids_sents.npy')
     filename = files[1]
     if files[0] == 'paraids_sents.npy':
