@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn.decomposition import PCA
 import torch
+import argparse
 
 def Mu_etAl_PPA(X):
     #X = X.numpy()
@@ -96,3 +97,34 @@ def Raunak_etAl_dimred_qry_attn_data(X, emb_size, qd, pd):
     zp = np.hstack((zp[:sample_size, :], zp[sample_size:, :]))
     z = np.hstack((zq, zp))
     return torch.tensor(z)
+
+def main():
+    parser = argparse.ArgumentParser(description='Dimensionality reduction algo for embedding vectors')
+    parser.add_argument('-ei', '--input_embid', help='Path to input paraid file')
+    parser.add_argument('-ev', '--input_embvec', help='Path to input embvec file')
+    parser.add_argument('-op', '--option', type=int, help='Options 1: Mu et al, 2: Raunak dimred')
+    parser.add_argument('-d', '--red_dim', type=int, help='Reduced dim size for Raunak')
+    parser.add_argument('-oi', '--out_paraid', help='Path to output paraid')
+    parser.add_argument('-ov', '--out_vec', help='Path to output embvec file')
+    args = vars(parser.parse_args())
+    input_id = args['input_embid']
+    input_vec = args['input_embvec']
+    option = args['option']
+    outid = args['out_paraid']
+    outvec = args['out_vec']
+    pids = np.load(input_id)
+    vecs = np.load(input_vec)
+    if option == 1:
+        newvecs = Mu_etAl_PPA(vecs)
+        np.save(outid, pids)
+        np.save(outvec, newvecs)
+    elif option == 2:
+        dimsize = args['red_dim']
+        newvecs = Raunak_etAl_dimred(vecs, dimsize)
+        np.save(outid, pids)
+        np.save(outvec, newvecs)
+    else:
+        print('Wrong option')
+
+if __name__ == '__main__':
+    main()
