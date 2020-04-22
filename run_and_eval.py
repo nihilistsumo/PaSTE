@@ -2,7 +2,7 @@ import argparse
 from data import process_qry_attn_data as dat
 from data import unsup_data_process as undat
 from src.query_attn_network import Query_Attn_ExpandLL_Network, Query_Attn_LL_Network, \
-    Siamese_Network, Query_Attn_InteractMatrix_Network, Query_Attn_LL_dimred_Network
+    Siamese_Network, Query_Attn_InteractMatrix_Network, Query_Attn_LL_dimred_Network, Siamese_Network_dimred
 from sklearn.metrics import roc_auc_score
 import sys
 import torch
@@ -35,10 +35,7 @@ def main():
     parser.add_argument('-pt', '--test_emb_paraids_file', help='Path to test embedding paraids file')
     parser.add_argument('-d', '--train_data_file', help='Path to train data file')
     parser.add_argument('-t', '--test_data_file', help='Path to test data file')
-    parser.add_argument('-qd', '--query_dim', type=int, help='Dimension of query embedding to be reduced by Raunak et al')
     parser.add_argument('-pd', '--para_dim', type=int, help='Dimension of para embedding to be reduced by Raunak et al')
-    parser.add_argument('-h1', '--hidden_layer_size', type=int, help='Hidden layer size of dimred NN')
-    parser.add_argument('-oe', '--out_emb', type=int, help='Output size of dimred NN')
     parser.add_argument('-o', '--model_outfile', help='Path to save the trained model')
     args = vars(parser.parse_args())
     emb_file_train = args['emb_file_train']
@@ -58,11 +55,8 @@ def main():
     else:
         device1 = torch.device('cpu')
         device2 = device1
-    if args['query_dim'] != None:
-        qdim = int(args['query_dim'])
-        pdim = int(args['para_dim'])
-        h1 = int(args['hidden_layer_size'])
-        oemb = int(args['out_emb'])
+    if args['para_dim'] != None:
+        reddim = int(args['para_dim'])
     log_out = model_out + '.train.log'
     if variation != 0:
         X, y = dat.get_data(emb_model_name, emb_file_train, emb_pids_file, train_filepath)
@@ -83,12 +77,12 @@ def main():
     elif variation == 4:
         NN = Query_Attn_InteractMatrix_Network().to(device1)
     elif variation == 5:
-        NN = Query_Attn_LL_Network().to(device1)
+        NN = Siamese_Network().to(device1)
         X_train = undat.Mu_etAl_PPA_qry_attn_data(X_train, NN.emb_size)
         X_val = undat.Mu_etAl_PPA_qry_attn_data(X_val, NN.emb_size)
         X_test = undat.Mu_etAl_PPA_qry_attn_data(X_test, NN.emb_size)
     elif variation == 6:
-        NN = Query_Attn_LL_dimred_Network(qdim, pdim, h1, oemb).to(device1)
+        NN = Siamese_Network_dimred(reddim).to(device1)
         X_train = undat.Raunak_etAl_dimred_qry_attn_data(X_train, NN.emb_size, qdim, pdim)
         X_val = undat.Raunak_etAl_dimred_qry_attn_data(X_val, NN.emb_size, qdim, pdim)
         X_test = undat.Raunak_etAl_dimred_qry_attn_data(X_test, NN.emb_size, qdim, pdim)

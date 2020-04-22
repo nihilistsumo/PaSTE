@@ -87,13 +87,13 @@ def Raunak_etAl_dimred(X, d):
     #z = np.hstack((z[:sample_size, :], z[sample_size:, :]))
     return z
 
-def Raunak_etAl_dimred_qry_attn_data(X, emb_size, qd, pd):
+def Raunak_etAl_dimred_qry_attn_data(X, emb_size, dimred):
     X = X.numpy()
     sample_size = X.shape[0]
     Xq = X[:, :emb_size]
     Xp = np.vstack((X[:, emb_size:2 * emb_size], X[:, 2 * emb_size:]))
-    zq = Raunak_etAl_dimred(Xq, qd)
-    zp = Raunak_etAl_dimred(Xp, pd)
+    zq = Raunak_etAl_dimred(Xq, dimred)
+    zp = Raunak_etAl_dimred(Xp, dimred)
     zp = np.hstack((zp[:sample_size, :], zp[sample_size:, :]))
     z = np.hstack((zq, zp))
     return torch.tensor(z)
