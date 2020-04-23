@@ -91,6 +91,7 @@ def main():
         exit(1)
 
     X_train = X_train.cuda(device1)
+    y_train = y_train.cuda(device1)
     X_val = X_val.cuda(device1)
     X_test = X_test.cuda(device1)
     criterion = nn.MSELoss().cuda(device1)
