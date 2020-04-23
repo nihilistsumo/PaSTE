@@ -3,6 +3,14 @@ from sklearn.decomposition import PCA
 import torch
 import argparse
 
+def get_pca_transform_mat(emb_vec_file, out_transform_mat_file):
+    X = np.load(emb_vec_file)
+    pca = PCA()
+    X = X - np.mean(X)
+    X_fit = pca.fit_transform(X)
+    U1 = pca.components_
+    np.save(out_transform_mat_file, U1)
+    
 def Mu_etAl_PPA(X):
     #X = X.numpy()
     #sample_size = X.shape[0]
