@@ -217,20 +217,21 @@ class Siamese_Network_dimred(nn.Module):
     def __init__(self, red_dim):
         super(Siamese_Network_dimred, self).__init__()
         # parameters
-        self.emb_size = red_dim
+        self.emb_size = 768
+        self.red_dim = red_dim
         self.cosine_sim = nn.CosineSimilarity()
         # self.LL1 = nn.Linear(self.emb_size, self.emb_size)
-        self.LL1 = nn.Linear(self.emb_size, self.emb_size)
+        self.LL1 = nn.Linear(self.red_dim, self.red_dim)
         #self.LL1 = nn.Linear(self.emb_size, 128)
         #self.LL2 = nn.Linear(128, 64)
         #self.LL2 = nn.Linear(self.emb_size, self.emb_size)
-        self.LL3 = nn.Linear(6*self.emb_size, 1)
+        self.LL3 = nn.Linear(6*self.red_dim, 1)
         #self.LL3 = nn.Linear(6*64, 1)
 
     def forward(self, X):
-        self.Xq = X[:, :self.emb_size]
-        self.Xp1 = X[:, self.emb_size:2 * self.emb_size]
-        self.Xp2 = X[:, 2 * self.emb_size:]
+        self.Xq = X[:, :self.red_dim]
+        self.Xp1 = X[:, self.red_dim:2 * self.red_dim]
+        self.Xp2 = X[:, 2 * self.red_dim:]
         self.z1 = torch.abs(self.Xp1 - self.Xq)
         self.z2 = torch.abs(self.Xp2 - self.Xq)
         self.zdiff = torch.abs(self.Xp1 - self.Xp2)
