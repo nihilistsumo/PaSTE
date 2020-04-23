@@ -110,25 +110,58 @@ def get_data(emb_model, emb_file, emb_paraids_file, query_attn_data_file):
         c += 1
         if c % 100 == 0:
             sys.stdout.write('\r' + str(c) + ' samples read')
-
-    # with open(query_attn_data_file, 'r') as qd:
-    #     c = 0
-    #     for l in qd:
-    #         qemb = qemb_list[0]
-    #         p1 = l.split('\t')[2]
-    #         p2 = l.split('\t')[3].rstrip()
-    #         if emb_mode == 's':
-    #             p1emb = para_emb_dict[p1]
-    #             p2emb = para_emb_dict[p2]
-    #         elif emb_mode == 'm':
-    #             p1emb = emb.get_single_embedding(p1)
-    #             p2emb = emb.get_single_embedding(p2)
-    #
-    #         if p1emb is None or p2emb is None:
-    #             continue
-    #         X_train.append(np.hstack((qemb, p1emb, p2emb)))
-    #         y_train.append(float(l.split('\t')[0]))
-    #         c += 1
-    #         if c % 100 == 0:
-    #             sys.stdout.write('\r' + str(c) + ' samples read')
     return (torch.tensor(X), torch.tensor(y))
+
+def get_data_mu_etal(emb_model, emb_file, emb_paraids_file, query_attn_data_file, pca_components_file):
+    U1 = np.load(pca_components_file)
+    model = SentenceTransformer(emb_model)
+    paraids = list(np.load(emb_paraids_file))
+    X= []
+    y= []
+
+    para_emb = np.load(emb_file)
+    para_emb_dict = dict()
+    for i in range(len(paraids)):
+        para_emb_dict[paraids[i]] = para_emb[i]
+
+    count = 0
+    for line in open(query_attn_data_file).readlines(): count += 1
+    print('Reading ' + str(count) + ' samples in data file')
+
+    queries = []
+    p1_list = []
+    p2_list = []
+    targets = []
+
+    with open(query_attn_data_file, 'r') as qd:
+        for l in qd:
+            queries.append(l.split('\t')[1])
+            p1_list.append(l.split('\t')[2])
+            p2_list.append(l.split('\t')[3].rstrip())
+            targets.append(float(l.split('\t')[0]))
+    print('Using ' + emb_file + ' to embed query, should be same as the embedding file')
+    qemb_list = model.encode(queries, show_progress_bar=True)
+    print('Queries embedded, now formatting the data into tensors')
+    c = 0
+    for i in range(len(queries)):
+        qemb = qemb_list[i]
+        p1emb = para_emb_dict[p1_list[i]]
+        p2emb = para_emb_dict[p2_list[i]]
+
+        if p1emb is None or p2emb is None:
+            continue
+        qemb = mu_etal_transform(qemb, U1)
+        p1emb = mu_etal_transform(p1emb, U1)
+        p2emb = mu_etal_transform(p2emb, U1)
+
+        X.append(np.hstack((qemb, p1emb, p2emb)))
+        y.append(targets[i])
+        c += 1
+        if c % 100 == 0:
+            sys.stdout.write('\r' + str(c) + ' samples read')
+    return (torch.tensor(X), torch.tensor(y))
+
+def mu_etal_transform(x, U1):
+    for u in U1[0:7]:
+        x = x - np.dot(u.transpose(), x) * u
+    return x
