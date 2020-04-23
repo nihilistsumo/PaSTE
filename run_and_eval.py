@@ -36,6 +36,7 @@ def main():
     parser.add_argument('-d', '--train_data_file', help='Path to train data file')
     parser.add_argument('-t', '--test_data_file', help='Path to test data file')
     parser.add_argument('-pca', '--pca_mat', help='Path to PCA transformation matrix')
+    parser.add_argument('-mu', '--mudim_sub', type=int, help='No of pca dim to subtract')
     parser.add_argument('-pd', '--para_dim', type=int, help='Dimension of para embedding to be reduced by Raunak et al')
     parser.add_argument('-o', '--model_outfile', help='Path to save the trained model')
     args = vars(parser.parse_args())
@@ -61,14 +62,15 @@ def main():
     log_out = model_out + '.train.log'
     if variation == 5:
         pca_mat = args['pca_mat']
-        X, y = dat.get_data_mu_etal(emb_model_name, emb_file_train, emb_pids_file, train_filepath, pca_mat)
+        mudim = args['mudim_sub']
+        X, y = dat.get_data_mu_etal(emb_model_name, emb_file_train, emb_pids_file, train_filepath, pca_mat, mudim)
 
         # X_val = X[:100, :].cuda(device1)
         X_val = X[:100, :]
         y_val = y[:100]
         X_train = X[100:, :]
         y_train = y[100:]
-        X_test, y_test = dat.get_data_mu_etal(emb_model_name, emb_file_test, test_emb_pids_file, test_filepath, pca_mat)
+        X_test, y_test = dat.get_data_mu_etal(emb_model_name, emb_file_test, test_emb_pids_file, test_filepath, pca_mat, mudim)
     elif variation != 0:
         X, y = dat.get_data(emb_model_name, emb_file_train, emb_pids_file, train_filepath)
 

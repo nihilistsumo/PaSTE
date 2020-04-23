@@ -112,7 +112,7 @@ def get_data(emb_model, emb_file, emb_paraids_file, query_attn_data_file):
             sys.stdout.write('\r' + str(c) + ' samples read')
     return (torch.tensor(X), torch.tensor(y))
 
-def get_data_mu_etal(emb_model, emb_file, emb_paraids_file, query_attn_data_file, pca_components_file):
+def get_data_mu_etal(emb_model, emb_file, emb_paraids_file, query_attn_data_file, pca_components_file, mudim_red):
     U1 = np.load(pca_components_file)
     model = SentenceTransformer(emb_model)
     paraids = list(np.load(emb_paraids_file))
@@ -150,9 +150,9 @@ def get_data_mu_etal(emb_model, emb_file, emb_paraids_file, query_attn_data_file
 
         if p1emb is None or p2emb is None:
             continue
-        qemb = mu_etal_transform(qemb, U1)
-        p1emb = mu_etal_transform(p1emb, U1)
-        p2emb = mu_etal_transform(p2emb, U1)
+        qemb = mu_etal_transform(qemb, U1, mudim_red)
+        p1emb = mu_etal_transform(p1emb, U1, mudim_red)
+        p2emb = mu_etal_transform(p2emb, U1, mudim_red)
 
         X.append(np.hstack((qemb, p1emb, p2emb)))
         y.append(targets[i])
@@ -161,7 +161,7 @@ def get_data_mu_etal(emb_model, emb_file, emb_paraids_file, query_attn_data_file
             sys.stdout.write('\r' + str(c) + ' samples read')
     return (torch.tensor(X), torch.tensor(y))
 
-def mu_etal_transform(x, U1):
-    for u in U1[0:7]:
+def mu_etal_transform(x, U1, mudim_red):
+    for u in U1[0:mudim_red]:
         x = x - np.dot(u.transpose(), x) * u
     return x
