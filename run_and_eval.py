@@ -35,7 +35,7 @@ def main():
     parser.add_argument('-pt', '--test_emb_paraids_file', help='Path to test embedding paraids file')
     parser.add_argument('-d', '--train_data_file', help='Path to train data file')
     parser.add_argument('-t', '--test_data_file', help='Path to test data file')
-    parser.add_argument('-pca', 'pca_mat', help='Path to PCA transformation matrix')
+    parser.add_argument('-pca', '--pca_mat', help='Path to PCA transformation matrix')
     parser.add_argument('-pd', '--para_dim', type=int, help='Dimension of para embedding to be reduced by Raunak et al')
     parser.add_argument('-o', '--model_outfile', help='Path to save the trained model')
     args = vars(parser.parse_args())
