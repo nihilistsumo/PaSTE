@@ -90,9 +90,9 @@ def main():
         print('Wrong model variation selected!')
         exit(1)
 
-    X_train.cuda(device1)
-    X_val.cuda(device1)
-    X_test.cuda(device1)
+    X_train = X_train.cuda(device1)
+    X_val = X_val.cuda(device1)
+    X_test = X_test.cuda(device1)
     criterion = nn.MSELoss().cuda(device1)
     #criterion = nn.BCELoss().cuda(device1)
     opt = optim.SGD(NN.parameters(), lr=lrate)
