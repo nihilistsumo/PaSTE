@@ -61,12 +61,12 @@ def main():
     if variation != 0:
         X, y = dat.get_data(emb_model_name, emb_file_train, emb_pids_file, train_filepath)
 
-        X_val = X[:100, :].cuda(device1)
+        #X_val = X[:100, :].cuda(device1)
+        X_val = X[:100, :]
         y_val = y[:100]
-        X_train = X[100:, :].cuda(device1)
-        y_train = y[100:].cuda(device1)
+        X_train = X[100:, :]
+        y_train = y[100:]
     X_test, y_test = dat.get_data(emb_model_name, emb_file_test, test_emb_pids_file, test_filepath)
-    X_test = X_test.cuda(device1)
 
     if variation == 1:
         NN = Query_Attn_ExpandLL_Network().to(device1)
@@ -83,14 +83,16 @@ def main():
         X_test = undat.Mu_etAl_PPA_qry_attn_data(X_test, NN.emb_size)
     elif variation == 6:
         NN = Siamese_Network_dimred(reddim).to(device1)
-        X_train = undat.Raunak_etAl_dimred_qry_attn_data(X_train, NN.emb_size, qdim, pdim)
-        X_val = undat.Raunak_etAl_dimred_qry_attn_data(X_val, NN.emb_size, qdim, pdim)
-        X_test = undat.Raunak_etAl_dimred_qry_attn_data(X_test, NN.emb_size, qdim, pdim)
+        X_train = undat.Raunak_etAl_dimred_qry_attn_data(X_train, NN.emb_size, reddim)
+        X_val = undat.Raunak_etAl_dimred_qry_attn_data(X_val, NN.emb_size, reddim)
+        X_test = undat.Raunak_etAl_dimred_qry_attn_data(X_test, NN.emb_size, reddim)
     else:
         print('Wrong model variation selected!')
         exit(1)
 
-
+    X_train.cuda(device1)
+    X_val.cuda(device1)
+    X_test.cuda(device1)
     criterion = nn.MSELoss().cuda(device1)
     #criterion = nn.BCELoss().cuda(device1)
     opt = optim.SGD(NN.parameters(), lr=lrate)
