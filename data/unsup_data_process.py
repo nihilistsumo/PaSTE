@@ -6,7 +6,7 @@ import argparse
 def get_pca_transform_mat(emb_vec_file, out_transform_mat_file):
     X = np.load(emb_vec_file)
     pca = PCA()
-    X = X - np.mean(X)
+    X = X - np.mean(X, axis=0)
     X_fit = pca.fit_transform(X)
     U1 = pca.components_
     np.save(out_transform_mat_file, U1)
@@ -75,16 +75,16 @@ def Raunak_etAl_dimred(X, d):
     #sample_size = X.shape[0]
     #X = np.vstack((X[:, :768], X[:, 768:]))
     pca = PCA(n_components=d)
-    X_train = X - np.mean(X)
+    X_train = X - np.mean(X, axis=0)
     X_new_final = pca.fit_transform(X_train)
 
     # PCA to do Post-Processing Again
     pca = PCA(n_components=d)
-    X_new = X_new_final - np.mean(X_new_final)
+    X_new = X_new_final - np.mean(X_new_final, axis=0)
     X_new_fit = pca.fit_transform(X_new)
     Ufit = pca.components_
 
-    X_new_final = X_new_final - np.mean(X_new_final)
+    X_new_final = X_new_final - np.mean(X_new_final, axis=0)
 
     z = []
     for i, x in enumerate(X_new_final):
