@@ -10,14 +10,14 @@ def get_pca_transform_mat(emb_vec_file, out_transform_mat_file):
     X_fit = pca.fit_transform(X)
     U1 = pca.components_
     np.save(out_transform_mat_file, U1)
-    
+
 def Mu_etAl_PPA(X):
     #X = X.numpy()
     #sample_size = X.shape[0]
     #X = np.vstack((X[:, :768], X[:, 768:]))
     print('Applying PPA by Mu et al.')
     pca = PCA()
-    X = X - np.mean(X)
+    X = X - np.mean(X, axis=0)
     X_fit = pca.fit_transform(X)
     U1 = pca.components_
     z = []
