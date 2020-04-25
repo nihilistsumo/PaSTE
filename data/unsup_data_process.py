@@ -17,11 +17,11 @@ def get_pca_transformed_vecs(emb_vec_file, dim, outdir):
         for d in [50, 100, 200, 300, 400, 500, 600, 700]:
             pca = PCA(n_components=d)
             X_fit = pca.fit_transform(X)
-            np.save(outdir+'/v'+d+'.npy', X_fit)
+            np.save(outdir+'/v'+str(d)+'.npy', X_fit)
     else:
         pca = PCA(n_components=dim)
         X_fit = pca.fit_transform(X)
-        np.save(outdir + '/v' + dim + '.npy', X_fit)
+        np.save(outdir + '/v' + str(dim) + '.npy', X_fit)
 
 def Mu_etAl_PPA(X):
     #X = X.numpy()
