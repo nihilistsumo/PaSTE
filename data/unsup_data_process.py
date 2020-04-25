@@ -6,7 +6,7 @@ import argparse
 def get_pca_transform_mat(emb_vec_file, out_transform_mat_file):
     X = np.load(emb_vec_file)
     pca = PCA()
-    X = X - np.mean(X)
+    X = X - np.mean(X, axis=0)
     X_fit = pca.fit_transform(X)
     U1 = pca.components_
     np.save(out_transform_mat_file, U1)
@@ -17,7 +17,7 @@ def Mu_etAl_PPA(X):
     #X = np.vstack((X[:, :768], X[:, 768:]))
     print('Applying PPA by Mu et al.')
     pca = PCA()
-    X = X - np.mean(X)
+    X = X - np.mean(X, axis=0)
     X_fit = pca.fit_transform(X)
     U1 = pca.components_
     z = []
@@ -41,33 +41,6 @@ def Mu_etAl_PPA_qry_attn_data(X, emb_size):
     zp = np.hstack((zp[:sample_size, :], zp[sample_size:, :]))
     z = np.hstack((zq, zp))
     return torch.tensor(z)
-    # pca = PCA()
-    # Xq = Xq - np.mean(Xq)
-    # Xq_fit = pca.fit_transform(Xq)
-    # Uq1 = pca.components_
-    # zq = []
-    # # Removing Projections on Top Components
-    # for i, x in enumerate(Xq):
-    #     for u in Uq1[0:7]:
-    #         x = x - np.dot(u.transpose(), x) * u
-    #     zq.append(x)
-    # zq = np.array(zq)
-    #
-    # pca = PCA()
-    # Xp = Xp - np.mean(Xp)
-    # Xp_fit = pca.fit_transform(Xp)
-    # Up1 = pca.components_
-    # zp = []
-    # # Removing Projections on Top Components
-    # for i, x in enumerate(Xp):
-    #     for u in Up1[0:7]:
-    #         x = x - np.dot(u.transpose(), x) * u
-    #     zp.append(x)
-    # zp = np.array(zp)
-    #
-    # zp = np.hstack((zp[:sample_size, :], zp[sample_size:, :]))
-    # z = np.hstack((zq, zp))
-    # return torch.tensor(z)
 
 def Raunak_etAl_dimred(X, d):
     print('Applying dim reduction algo by Raunak et al.')
@@ -75,16 +48,16 @@ def Raunak_etAl_dimred(X, d):
     #sample_size = X.shape[0]
     #X = np.vstack((X[:, :768], X[:, 768:]))
     pca = PCA(n_components=d)
-    X_train = X - np.mean(X)
+    X_train = X - np.mean(X, axis=0)
     X_new_final = pca.fit_transform(X_train)
 
     # PCA to do Post-Processing Again
     pca = PCA(n_components=d)
-    X_new = X_new_final - np.mean(X_new_final)
+    X_new = X_new_final - np.mean(X_new_final, axis=0)
     X_new_fit = pca.fit_transform(X_new)
     Ufit = pca.components_
 
-    X_new_final = X_new_final - np.mean(X_new_final)
+    X_new_final = X_new_final - np.mean(X_new_final, axis=0)
 
     z = []
     for i, x in enumerate(X_new_final):
