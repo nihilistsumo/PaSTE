@@ -2,7 +2,7 @@ import argparse
 from data import process_qry_attn_data as dat
 from data import unsup_data_process as undat
 from src.query_attn_network import Query_Attn_ExpandLL_Network, Query_Attn_LL_Network, \
-    Siamese_Network, Query_Attn_InteractMatrix_Network, Query_Attn_LL_dimred_Network, Siamese_Network_dimred
+    Siamese_Network, Query_Attn_InteractMatrix_Network, Siamese_Ablation_Network, Siamese_Network_dimred
 from sklearn.metrics import roc_auc_score
 import sys
 import torch
@@ -94,6 +94,8 @@ def main():
         X_train = undat.Raunak_etAl_dimred_qry_attn_data(X_train, NN.emb_size, reddim)
         X_val = undat.Raunak_etAl_dimred_qry_attn_data(X_val, NN.emb_size, reddim)
         X_test = undat.Raunak_etAl_dimred_qry_attn_data(X_test, NN.emb_size, reddim)
+    elif variation == 7:
+        NN = Siamese_Ablation_Network().to(device1)
     else:
         print('Wrong model variation selected!')
         exit(1)
