@@ -215,7 +215,7 @@ class Siamese_Network(nn.Module):
 
 class Siamese_Ablation_Network(nn.Module):
     def __init__(self, ):
-        super(Siamese_Network, self).__init__()
+        super(Siamese_Ablation_Network, self).__init__()
         # parameters
         self.emb_size = 768
         self.cosine_sim = nn.CosineSimilarity()
