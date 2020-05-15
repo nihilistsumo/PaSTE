@@ -10,7 +10,8 @@ encoder.FLOAT_REPR = lambda o: format(o, '.8f')
 def write_parapair_scores(nn_model_path, emb_model_name, emb_vec_file, emb_pids_file, qry_attn_file, outfile):
     X_test, y_test = dat.get_data(emb_model_name, emb_vec_file, emb_pids_file, qry_attn_file)
     #X_test = X_test.cuda(device1)
-    model = Siamese_Network()
+    #model = Siamese_Network()
+    model = Siamese_Ablation_Network()
     #model.load_state_dict(torch.load(nn_model_path, map_location='cpu')) # when running in local
     model.load_state_dict(torch.load(nn_model_path))
     if X_test.dtype == torch.float64:
