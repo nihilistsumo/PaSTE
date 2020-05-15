@@ -241,7 +241,7 @@ class Siamese_Ablation_Network(nn.Module):
         self.zdqp1 = torch.abs(self.zp1 - self.zql)
         self.zdqp2 = torch.abs(self.zp2 - self.zql)
         #self.z = torch.cat((self.zql, self.zp1, self.zp2, self.zd, self.zdqp1, self.zdqp2), dim=1)
-        self.z = torch.cat((self.zp1, self.zp2, self.zd), dim=1)
+        self.z = torch.cat((self.zql, self.zp1, self.zp2), dim=1)
         #o = self.cosine_sim(self.z1, self.z2)  # final activation function
         o = torch.relu(self.LL3(self.z))
         o = o.reshape(-1)
