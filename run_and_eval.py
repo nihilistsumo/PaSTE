@@ -129,7 +129,7 @@ def main():
                 if i%10 == 0:
                     lo.write('Iteration: ' + str(i) + ', loss: ' +str(loss) + ', val AUC: ' +str(val_auc_score) + '\n')
                     y_pred = NN.predict(X_test_curr).detach().cpu().numpy()
-                    test_auc = roc_auc_score(y_test, y_pred)
+                    test_auc = roc_auc_score(y_test[:500], y_pred)
                 loss.backward()
                 opt.step()
     # NN.saveWeights(NN)
