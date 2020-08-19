@@ -104,7 +104,7 @@ def main():
 
     # X_train = X_train.cuda(device1)
     num_batch = X_train.shape[0] // batch + 1
-    y_train = y_train.cuda(device1)
+    # y_train = y_train.cuda(device1)
     X_val = X_val.cuda(device1)
     X_test = X_test.cuda(device1)
     criterion = nn.MSELoss().cuda(device1)
@@ -116,10 +116,12 @@ def main():
         for i in range(iter):
             for j in range(num_batch):
                 X_train_curr = X_train[j*batch: (j+1)*batch]
+                y_train_curr = y_train[j*batch: (j+1)*batch]
                 X_train_curr = X_train_curr.cuda(device1)
+                y_train_curr = y_train_curr.cuda(device1)
                 opt.zero_grad()
                 output = NN(X_train_curr)
-                loss = criterion(output, y_train)
+                loss = criterion(output, y_train_curr)
                 y_val_pred = NN.predict(X_val).detach().cpu().numpy()
                 val_auc_score = roc_auc_score(y_val, y_val_pred)
                 sys.stdout.write('\r' + 'Iteration: ' + str(i) + ', loss: ' +str(loss) + ', val AUC: ' +
