@@ -106,7 +106,7 @@ def main():
     num_batch = X_train.shape[0] // batch + 1
     # y_train = y_train.cuda(device1)
     X_val = X_val.cuda(device1)
-    X_test = X_test.cuda(device1)
+    X_test_curr = X_test[:500].cuda(device1)
     criterion = nn.MSELoss().cuda(device1)
     #criterion = nn.BCELoss().cuda(device1)
     opt = optim.SGD(NN.parameters(), lr=lrate)
@@ -128,7 +128,7 @@ def main():
                                  '{:.4f}'.format(val_auc_score) + ', test AUC: ' + '{:.4f}'.format(test_auc))
                 if i%10 == 0:
                     lo.write('Iteration: ' + str(i) + ', loss: ' +str(loss) + ', val AUC: ' +str(val_auc_score) + '\n')
-                    y_pred = NN.predict(X_test).detach().cpu().numpy()
+                    y_pred = NN.predict(X_test_curr).detach().cpu().numpy()
                     test_auc = roc_auc_score(y_test, y_pred)
                 loss.backward()
                 opt.step()
