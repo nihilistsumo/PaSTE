@@ -116,6 +116,7 @@ def main():
         for i in range(iter):
             for j in range(num_batch):
                 X_train_curr = X_train[j*batch: (j+1)*batch]
+                X_train_curr = X_train_curr.cuda(device1)
                 opt.zero_grad()
                 output = NN(X_train_curr)
                 loss = criterion(output, y_train)
