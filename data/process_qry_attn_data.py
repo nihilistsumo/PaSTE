@@ -95,12 +95,13 @@ def get_data(emb_model, emb_file, emb_paraids_file, query_attn_data_file):
             p2_list.append(l.split('\t')[3].rstrip())
             targets.append(float(l.split('\t')[0]))
     print('Using ' + emb_file + ' to embed query, should be same as the embedding file')
-    if os.path.isfile('./cache/embedded_cached_'+query_attn_data_file):
-        with open('./cache/embedded_cached_'+query_attn_data_file, 'r') as cache:
+    query_attn_filename = query_attn_data_file.split('/')[len(query_attn_data_file.split('/')-1)]
+    if os.path.isfile('./cache/embedded_cached_'+query_attn_filename):
+        with open('./cache/embedded_cached_'+query_attn_filename, 'r') as cache:
             qemb_list = json.load(cache)
     else:
         qemb_list = model.encode(queries, show_progress_bar=True)
-        with open('./cache/embedded_cached_' + query_attn_data_file, 'w') as cache:
+        with open('./cache/embedded_cached_' + query_attn_filename, 'w') as cache:
             json.dump(qemb_list, cache)
     print('Queries embedded, now formatting the data into tensors')
     c = 0
