@@ -96,7 +96,7 @@ def get_data(emb_model, emb_file, emb_paraids_file, query_attn_data_file):
             targets.append(float(l.split('\t')[0]))
     print('Using ' + emb_file + ' to embed query, should be same as the embedding file')
     query_attn_filename = query_attn_data_file.split('/')[len(query_attn_data_file.split('/'))-1]
-    if os.path.isfile('./cache/embedded_cached_'+query_attn_filename):
+    if os.path.isfile('./cache/embedded_cached_'+query_attn_filename+".npy"):
         qemb_list = np.load('./cache/embedded_cached_'+query_attn_filename+".npy", allow_pickle=True)
     else:
         qemb_list = model.encode(queries, show_progress_bar=True)
