@@ -5,6 +5,7 @@ from sentence_transformers import SentenceTransformer
 from src.sentbert_embed import SentbertParaEmbedding
 import torch
 import sys
+import os
 from sklearn.preprocessing import minmax_scale
 
 
@@ -94,7 +95,13 @@ def get_data(emb_model, emb_file, emb_paraids_file, query_attn_data_file):
             p2_list.append(l.split('\t')[3].rstrip())
             targets.append(float(l.split('\t')[0]))
     print('Using ' + emb_file + ' to embed query, should be same as the embedding file')
-    qemb_list = model.encode(queries, show_progress_bar=True)
+    if os.path.isfile('./cache/embedded_cached_'+query_attn_data_file):
+        with open('./cache/embedded_cached_'+query_attn_data_file, 'r') as cache:
+            qemb_list = json.load(cache)
+    else:
+        qemb_list = model.encode(queries, show_progress_bar=True)
+        with open('./cache/embedded_cached_' + query_attn_data_file, 'w') as cache:
+            json.dump(qemb_list, cache)
     print('Queries embedded, now formatting the data into tensors')
     c = 0
     for i in range(len(queries)):
