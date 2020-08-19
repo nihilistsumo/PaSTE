@@ -29,7 +29,8 @@ def main():
     parser.add_argument('-et', '--emb_file_test', help='Path to para embedding file for test split paras')
     parser.add_argument('-n', '--neural_model', help='Neural model variation (0/1/2)')
     parser.add_argument('-lr', '--learning_rate', help='Learning rate')
-    parser.add_argument('-i', '--num_iteration', help='No. of iteration')
+    parser.add_argument('-i', '--num_iteration', type=int, help='No. of iteration')
+    parser.add_argument('-bt', '--batch_size', type=int, help='Size of each training batch')
     parser.add_argument('-mp', '--emb_model_name', help='Emb model name or path')
     parser.add_argument('-p', '--train_emb_paraids_file', help='Path to train embedding paraids file')
     parser.add_argument('-pt', '--test_emb_paraids_file', help='Path to test embedding paraids file')
@@ -44,7 +45,8 @@ def main():
     emb_file_test = args['emb_file_test']
     variation = int(args['neural_model'])
     lrate = float(args['learning_rate'])
-    iter = int(args['num_iteration'])
+    iter = args['num_iteration']
+    batch = args['batch_size']
     emb_model_name = args['emb_model_name']
     emb_pids_file = args['train_emb_paraids_file']
     test_emb_pids_file = args['test_emb_paraids_file']
@@ -100,7 +102,8 @@ def main():
         print('Wrong model variation selected!')
         exit(1)
 
-    X_train = X_train.cuda(device1)
+    # X_train = X_train.cuda(device1)
+    num_batch = X_train.shape[0] // batch + 1
     y_train = y_train.cuda(device1)
     X_val = X_val.cuda(device1)
     X_test = X_test.cuda(device1)
@@ -111,19 +114,21 @@ def main():
     test_auc = 0.0
     with open(log_out, 'w') as lo:
         for i in range(iter):
-            opt.zero_grad()
-            output = NN(X_train)
-            loss = criterion(output, y_train)
-            y_val_pred = NN.predict(X_val).detach().cpu().numpy()
-            val_auc_score = roc_auc_score(y_val, y_val_pred)
-            sys.stdout.write('\r' + 'Iteration: ' + str(i) + ', loss: ' +str(loss) + ', val AUC: ' +
-                             '{:.4f}'.format(val_auc_score) + ', test AUC: ' + '{:.4f}'.format(test_auc))
-            if i%10 == 0:
-                lo.write('Iteration: ' + str(i) + ', loss: ' +str(loss) + ', val AUC: ' +str(val_auc_score) + '\n')
-                y_pred = NN.predict(X_test).detach().cpu().numpy()
-                test_auc = roc_auc_score(y_test, y_pred)
-            loss.backward()
-            opt.step()
+            for j in range(num_batch):
+                X_train_curr = X_train[j*batch: (j+1)*batch]
+                opt.zero_grad()
+                output = NN(X_train_curr)
+                loss = criterion(output, y_train)
+                y_val_pred = NN.predict(X_val).detach().cpu().numpy()
+                val_auc_score = roc_auc_score(y_val, y_val_pred)
+                sys.stdout.write('\r' + 'Iteration: ' + str(i) + ', loss: ' +str(loss) + ', val AUC: ' +
+                                 '{:.4f}'.format(val_auc_score) + ', test AUC: ' + '{:.4f}'.format(test_auc))
+                if i%10 == 0:
+                    lo.write('Iteration: ' + str(i) + ', loss: ' +str(loss) + ', val AUC: ' +str(val_auc_score) + '\n')
+                    y_pred = NN.predict(X_test).detach().cpu().numpy()
+                    test_auc = roc_auc_score(y_test, y_pred)
+                loss.backward()
+                opt.step()
     # NN.saveWeights(NN)
     y_pred = NN.predict(X_test).detach().cpu().numpy()
     auc_score = roc_auc_score(y_test, y_pred)
