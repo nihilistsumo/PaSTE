@@ -54,11 +54,13 @@ def main():
     test_filepath = args['test_data_file']
     model_out = args['model_outfile']
     if torch.cuda.is_available():
-        device1 = torch.device('cuda:0')
-        device2 = torch.device('cuda:1')
+        # device1 = torch.device('cuda:0')
+        # device2 = torch.device('cuda:1')
+        torch.cuda.set_device(torch.device('cuda:0'))
     else:
-        device1 = torch.device('cpu')
-        device2 = device1
+        # device1 = torch.device('cpu')
+        # device2 = device1
+        torch.cuda.set_device(torch.device('cpu'))
     if args['para_dim'] != None:
         reddim = int(args['para_dim'])
     log_out = model_out + '.train.log'
@@ -84,20 +86,20 @@ def main():
         X_test, y_test = dat.get_data(emb_model_name, emb_file_test, test_emb_pids_file, test_filepath)
 
     if variation == 1:
-        NN = Query_Attn_ExpandLL_Network().to(device1)
+        NN = Query_Attn_ExpandLL_Network()
     elif variation == 2:
-        NN = Query_Attn_LL_Network().to(device1)
+        NN = Query_Attn_LL_Network()
     elif variation == 3 or variation == 5:
-        NN = Siamese_Network().to(device1)
+        NN = Siamese_Network()
     elif variation == 4:
-        NN = Query_Attn_InteractMatrix_Network().to(device1)
+        NN = Query_Attn_InteractMatrix_Network()
     elif variation == 6:
-        NN = Siamese_Network_dimred(reddim).to(device1)
+        NN = Siamese_Network_dimred(reddim)
         X_train = undat.Raunak_etAl_dimred_qry_attn_data(X_train, NN.emb_size, reddim)
         X_val = undat.Raunak_etAl_dimred_qry_attn_data(X_val, NN.emb_size, reddim)
         X_test = undat.Raunak_etAl_dimred_qry_attn_data(X_test, NN.emb_size, reddim)
     elif variation == 7:
-        NN = Siamese_Ablation_Network().to(device1)
+        NN = Siamese_Ablation_Network()
     else:
         print('Wrong model variation selected!')
         exit(1)
@@ -105,9 +107,9 @@ def main():
     # X_train = X_train.cuda(device1)
     num_batch = X_train.shape[0] // batch + 1
     # y_train = y_train.cuda(device1)
-    X_val = X_val.cuda(device1)
-    X_test_curr = X_test[:500].cuda(device1)
-    criterion = nn.MSELoss().cuda(device1)
+    # X_val = X_val.cuda(device1)
+    X_test_curr = X_test[:500]
+    criterion = nn.MSELoss()
     #criterion = nn.BCELoss().cuda(device1)
     opt = optim.SGD(NN.parameters(), lr=lrate)
     print()
@@ -117,8 +119,8 @@ def main():
             for j in range(num_batch):
                 X_train_curr = X_train[j*batch: (j+1)*batch]
                 y_train_curr = y_train[j*batch: (j+1)*batch]
-                X_train_curr = X_train_curr.cuda(device1)
-                y_train_curr = y_train_curr.cuda(device1)
+                # X_train_curr = X_train_curr.cuda(device1)
+                # y_train_curr = y_train_curr.cuda(device1)
                 opt.zero_grad()
                 output = NN(X_train_curr)
                 loss = criterion(output, y_train_curr)
